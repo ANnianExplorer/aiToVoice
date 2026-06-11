@@ -1,0 +1,9 @@
+package com.aitovoice.music.repository;
+
+import com.aitovoice.music.entity.Tag;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+
+public interface TagRepository extends JpaRepository<Tag, Long> {
+    List<Tag> findByUserId(Long userId);
+}

@@ -1,6 +1,6 @@
 package com.aitovoice.auth;
 
-import com.aitovoice.user.UserRepository;
+import com.aitovoice.user.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
