@@ -2,6 +2,7 @@ import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
+import TitleBar from './TitleBar';
 import PlayerBar from '../Player/PlayerBar';
 
 const { Content } = Layout;
@@ -9,6 +10,7 @@ const { Content } = Layout;
 export default function AppLayout() {
   return (
     <Layout style={{ height: '100vh' }}>
+      <TitleBar />
       <Layout.Sider width={240} style={{ background: '#000000' }}>
         <Sidebar />
       </Layout.Sider>
