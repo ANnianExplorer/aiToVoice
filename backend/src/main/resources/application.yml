@@ -45,6 +45,15 @@ ai:
     api-key: ${CLAUDE_API_KEY:}
     model: claude-sonnet-4-6
 
+# Swagger UI
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+
 logging:
   level:
     com.aitovoice: DEBUG
