@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './stores/authStore';
+import AppLayout from './components/Layout/AppLayout';
 import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
 
@@ -12,7 +13,7 @@ function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route
         path="/*"
-        element={isAuthenticated ? <div>App Layout - Coming in Task 2.5</div> : <Navigate to="/login" replace />}
+        element={isAuthenticated ? <AppLayout /> : <Navigate to="/login" replace />}
       />
     </Routes>
   );

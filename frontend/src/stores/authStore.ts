@@ -1,16 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  avatarUrl: string;
-  nickname: string;
-  bio: string;
-  role: string;
-  createdAt: string;
-}
+import type { User } from '../types';
+import * as authApi from '../api/auth';
 
 interface AuthState {
   user: User | null;
@@ -29,17 +20,23 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
 
       login: async (username, password) => {
-        // TODO: API call - will be implemented in Task 2.4
-        const mockUser = { id: 1, username, email: username + '@test.com', avatarUrl: '', nickname: username, bio: '', role: 'USER', createdAt: new Date().toISOString() };
-        set({ user: mockUser, token: 'mock-token', isAuthenticated: true });
-        localStorage.setItem('token', 'mock-token');
+        const res = await authApi.login({ username, password });
+        set({
+          user: res.data.user,
+          token: res.data.token,
+          isAuthenticated: true,
+        });
+        localStorage.setItem('token', res.data.token);
       },
 
       register: async (username, email, password) => {
-        // TODO: API call - will be implemented in Task 2.4
-        const mockUser = { id: 1, username, email, avatarUrl: '', nickname: username, bio: '', role: 'USER', createdAt: new Date().toISOString() };
-        set({ user: mockUser, token: 'mock-token', isAuthenticated: true });
-        localStorage.setItem('token', 'mock-token');
+        const res = await authApi.register({ username, email, password });
+        set({
+          user: res.data.user,
+          token: res.data.token,
+          isAuthenticated: true,
+        });
+        localStorage.setItem('token', res.data.token);
       },
 
       logout: () => {
