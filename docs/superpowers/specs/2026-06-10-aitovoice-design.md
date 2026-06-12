@@ -8,7 +8,138 @@
 
 **技术栈**：Java 17 SpringBoot 3.2 + Electron 28 + React 18 + TypeScript + MySQL 8.0
 
-## 2. 架构方案
+## 2. 架构决策记录（ADR）
+
+### ADR-1: 整体架构方案
+
+**决策时间**: 2026-06-10
+
+**备选方案**:
+
+| 方案 | 描述 | 优点 | 缺点 |
+|------|------|------|------|
+| A: 单体架构 | 单体 SpringBoot + 单体 Electron | 开发部署简单，模块间调用零延迟 | 后期某模块压力大需拆分 |
+| B: 微服务架构 | SpringBoot 多服务 + API Gateway | 松耦合，可独立扩展 | 开发复杂度高，需服务发现/网关/配置中心 |
+| C: 模块化单体 | 单体代码但模块化包结构 | 兼顾简单性和可扩展性 | 需前期做好模块隔离设计 |
+
+**决策**: 选择 **方案 A（单体架构）**
+
+**理由**:
+- 全功能一次性开发，单体最高效
+- Spring Boot 本身的包结构天然支持模块划分
+- 桌面应用场景下，微服务过重
+- 后期需要时可平滑演进到方案 C 或 B
+
+### ADR-2: AI 集成方式
+
+**决策时间**: 2026-06-10
+
+**备选方案**:
+
+| 方案 | 描述 | 优点 | 缺点 |
+|------|------|------|------|
+| 外部 AI API | 调用 OpenAI/Claude/Gemini 等云端 API | 效果好，模型持续更新 | 需要 API Key，依赖网络 |
+| 本地 AI 模型 | 使用本地模型（如 Whisper + 自训练） | 离线可用，数据隐私 | 开发复杂度高，效果有限 |
+| 混合模式 | 本地做基础分析，云端做高级指导 | 兼顾离线能力和效果 | 架构稍复杂 |
+
+**决策**: 选择 **混合模式**
+
+**理由**:
+- 本地使用 TarsosDSP 做音高/节拍检测（基础分析，离线可用）
+- 云端使用 OpenAI/Claude API 做发声建议和练习计划（高级指导）
+- 用户无需 API Key 也能使用基础功能
+
+### ADR-3: 音乐来源
+
+**决策时间**: 2026-06-10
+
+**备选方案**:
+
+| 方案 | 描述 | 优点 | 缺点 |
+|------|------|------|------|
+| 纯本地文件 | 用户自己上传 MP3/FLAC | 无版权问题，完全离线 | 内容有限 |
+| 本地 + 在线 API | 本地文件 + 接入 NeteaseCloudMusicApi | 内容丰富，开发简单 | 依赖第三方 API |
+| 自建流媒体 | 自有音乐服务器 | 完全可控 | 开发量大，需运维 |
+
+**决策**: 选择 **本地 + 在线 API**
+
+**理由**:
+- 支持用户上传本地音乐文件
+- 接入 NeteaseCloudMusicApi 获取在线音乐
+- source_type 字段区分 LOCAL/NETEASE 来源
+
+### ADR-4: UI 设计风格
+
+**决策时间**: 2026-06-10
+
+**备选方案**:
+
+| 方案 | 描述 | 特点 |
+|------|------|------|
+| 仿网易云 | 深色 + 红色强调色，左侧导航 + 底部播放条 | 国内用户熟悉 |
+| 现代简约 | 自定义设计，深色/浅色可切换 | 独特但需大量设计工作 |
+| 仿 Spotify | 深色 + 绿色，网格布局为主 | 国际化风格，现代感强 |
+
+**决策**: 选择 **仿 Spotify 风格**
+
+**理由**:
+- 深色主题 (#121212) + 绿色强调色 (#1DB954)
+- 左侧导航栏 + 顶部搜索栏 + 底部播放条布局
+- 网格卡片式内容展示
+
+### ADR-5: 数据库选择
+
+**决策时间**: 2026-06-10
+
+**备选方案**:
+
+| 方案 | 描述 | 适用场景 |
+|------|------|---------|
+| H2 + JPA | 嵌入式数据库，开发简单 | 原型开发 |
+| MySQL | 最流行的关系型数据库 | 生产环境，生态成熟 |
+| PostgreSQL | 功能更强大，支持 JSON/全文搜索 | 复杂查询场景 |
+
+**决策**: 选择 **MySQL 8.0**
+
+**理由**:
+- 用户明确要求使用 MySQL
+- 生态成熟，社区支持丰富
+- 满足当前项目需求
+
+### ADR-6: 后端模块结构演进
+
+**决策时间**: 2026-06-12（重构阶段）
+
+**初始结构**: 10 个模块（auth, user, music, playlist, social, voice, ai, recommend, ranking, file）
+
+**问题**:
+- 模块数过多，对桌面应用来说过重
+- DTO 泛滥，样板代码多
+- 薄模块（file 只有 2 个文件，ranking 只有 4 个）
+- voice 和 ai 围绕同一业务域却分开
+
+**重构后**: 6 个模块
+
+```
+com.aitovoice/
+├── common/     # 通用（BaseEntity, ApiResponse, 异常）
+├── config/     # 配置（Security, CORS, Swagger）
+├── auth/       # 认证（JWT, 登录注册）
+├── user/       # 用户 + 设置
+├── music/      # 歌曲 + 歌手 + 专辑 + 流派 + 歌单 + 排行榜 + 推荐 + 文件服务 + 歌词
+├── social/     # 评论 + 私信 + 关注
+└── voice/      # 录音 + 分析 + 练习 + AI 老师
+```
+
+**理由**:
+- 模块数从 10 降到 6，更紧凑
+- 每个模块内按 controller/service/repository/entity/dto 子目录组织
+- 文件数从 109 降到 ~70，维护成本更低
+- voice 和 ai 合并为"声乐训练"统一业务域
+
+---
+
+## 2.1 最终架构
 
 单体 SpringBoot 后端 + 单体 Electron 前端，通过 REST API + WebSocket 通信。
 
@@ -437,33 +568,97 @@ public record ApiResponse<T>(
 
 ```
 aiToVoice/
+├── README.md
+├── CONTRIBUTING.md
+├── .env.example
 ├── docs/
+│   └── superpowers/
+│       ├── specs/                    # 设计文档（本文件）
+│       └── plans/                    # 实施计划
 ├── backend/                          # Spring Boot 后端
 │   ├── pom.xml
-│   └── src/main/java/com/aitovoice/
-│       ├── AitoVoiceApplication.java
-│       ├── config/                   # 配置类
-│       ├── common/                   # 通用基类、异常、工具
-│       ├── auth/                     # 认证模块
-│       ├── user/                     # 用户模块
-│       ├── music/                    # 音乐模块（歌曲/歌手/专辑/流派/标签/歌词）
-│       ├── playlist/                 # 歌单模块
-│       ├── social/                   # 社交模块（评论/私信）
-│       ├── voice/                    # 语音模块（录音/分析/练习）
-│       ├── ai/                       # AI 模块
-│       ├── recommend/                # 推荐模块
-│       ├── ranking/                  # 排行榜模块
-│       └── file/                     # 文件服务
+│   └── src/
+│       ├── main/
+│       │   ├── java/com/aitovoice/
+│       │   │   ├── AitoVoiceApplication.java
+│       │   │   ├── common/           # BaseEntity, ApiResponse, ErrorCode, 异常处理
+│       │   │   ├── config/           # SecurityConfig, CorsConfig, OpenApiConfig
+│       │   │   ├── auth/             # JWT, 登录注册, AuthController
+│       │   │   │   ├── dto/          # LoginRequest, RegisterRequest, AuthResponse
+│       │   │   │   ├── JwtTokenProvider.java
+│       │   │   │   ├── JwtAuthenticationFilter.java
+│       │   │   │   ├── AuthService.java
+│       │   │   │   └── AuthController.java
+│       │   │   ├── user/             # 用户 + 设置
+│       │   │   │   ├── entity/       # User, UserSettings
+│       │   │   │   ├── repository/   # UserRepository, UserSettingsRepository
+│       │   │   │   ├── mapper/       # UserMapper
+│       │   │   │   ├── dto/          # UserProfileDto, UserSettingsDto
+│       │   │   │   ├── service/      # UserService, UserSettingsService
+│       │   │   │   └── controller/   # UserController, UserSettingsController
+│       │   │   ├── music/            # 歌曲 + 歌手 + 专辑 + 流派 + 歌单 + 排行榜 + 推荐 + 文件
+│       │   │   │   ├── entity/       # Song, Artist, Album, Genre, Tag, Lyrics, Playlist, Ranking, Recommendation
+│       │   │   │   ├── repository/   # 所有 Repository
+│       │   │   │   ├── mapper/       # SongMapper
+│       │   │   │   ├── dto/          # SongDto, PlaylistDto, RankingDto, RecommendDto
+│       │   │   │   ├── service/      # SongService, PlaylistService, RankingService, RecommendService, FileStorageService, LyricsService
+│       │   │   │   └── controller/   # SongController, PlaylistController, RankingController, FileController, LyricsController
+│       │   │   ├── social/           # 评论 + 私信 + 关注
+│       │   │   │   ├── entity/       # Comment, Message, UserFollow
+│       │   │   │   ├── repository/   # CommentRepository, MessageRepository, UserFollowRepository
+│       │   │   │   ├── dto/          # CommentDto, MessageDto
+│       │   │   │   ├── service/      # CommentService, MessageService, FollowService
+│       │   │   │   └── controller/   # CommentController, MessageController, FollowController
+│       │   │   └── voice/            # 录音 + 分析 + 练习 + AI 老师
+│       │   │       ├── entity/       # VoiceRecord, VoiceExercise, AiSession, AiMessage
+│       │   │       ├── repository/   # VoiceRecordRepository, AiSessionRepository
+│       │   │       ├── dto/          # VoiceRecordDto, AnalysisResultDto, AiMessageDto
+│       │   │       ├── service/      # VoiceService, AiService, AiClient, PitchAnalyzer, ScoreCalculator
+│       │   │       └── controller/   # VoiceController, AiController
+│       │   └── resources/
+│       │       ├── application.yml
+│       │       ├── application-dev.yml
+│       │       └── db/init.sql       # 数据库初始化脚本（22张表 + 种子数据）
+│       └── test/                     # 单元测试
 ├── frontend/                         # Electron + React 前端
 │   ├── package.json
-│   ├── electron/                     # Electron 主进程
+│   ├── tsconfig.json
+│   ├── vite.config.ts
+│   ├── electron/
+│   │   ├── main.ts                   # Electron 主进程（系统托盘、全局快捷键）
+│   │   └── preload.ts                # 预加载脚本
 │   └── src/
-│       ├── api/                      # API 请求层
-│       ├── stores/                   # Zustand 状态
+│       ├── main.tsx                  # React 入口
+│       ├── App.tsx                   # 路由配置
+│       ├── api/                      # API 请求层（10 个模块）
+│       │   ├── client.ts             # Axios 实例
+│       │   ├── auth.ts, songs.ts, playlists.ts, rankings.ts
+│       │   ├── voice.ts, ai.ts, social.ts, settings.ts, recommend.ts
+│       ├── stores/                   # Zustand 状态管理
+│       │   ├── authStore.ts, playerStore.ts
 │       ├── hooks/                    # 自定义 Hooks
-│       ├── components/               # 通用组件
-│       └── pages/                    # 页面组件
-├── docker-compose.yml
+│       │   └── useAudio.ts           # Howler.js 音频 Hook
+│       ├── types/                    # TypeScript 类型定义
+│       │   ├── index.ts, electron.d.ts
+│       ├── components/
+│       │   ├── Layout/               # AppLayout, Sidebar, TopBar, TitleBar
+│       │   ├── Player/               # PlayerBar（播放/暂停/进度/音量）
+│       │   └── Common/               # 通用组件
+│       ├── pages/                    # 15 个页面
+│       │   ├── Auth/                 # LoginPage, RegisterPage
+│       │   ├── Home/                 # HomePage（热门歌曲 + 新歌）
+│       │   ├── Search/               # SearchPage（搜索结果）
+│       │   ├── Library/              # LibraryPage（收藏 + 历史）
+│       │   ├── Rankings/             # RankingsPage（热歌/新歌/飙升榜）
+│       │   ├── Social/               # SocialPage, UserHomePage, MessagePage
+│       │   ├── AITeacher/            # AITeacherPage（AI 对话）
+│       │   ├── Studio/               # StudioPage（录音 + 练习）
+│       │   ├── Settings/             # SettingsPage（主题/音频/账号）
+│       │   ├── Profile/              # ProfilePage（个人资料）
+│       │   ├── Song/                 # SongDetailPage
+│       │   └── Playlist/             # PlaylistDetailPage
+│       └── assets/styles/
+│           └── global.css            # Spotify 风格主题变量
 └── .gitignore
 ```
 
