@@ -2,17 +2,23 @@ package com.aitovoice.voice.service;
 
 import com.aitovoice.common.BusinessException;
 import com.aitovoice.common.ErrorCode;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class AiClient {
 
-    private final WebClient webClient;
+    private final HttpClient httpClient;
+    private final ObjectMapper objectMapper;
     private final String provider;
     private final String openaiKey;
     private final String openaiModel;
@@ -20,17 +26,19 @@ public class AiClient {
     private final String claudeModel;
 
     public AiClient(
+            ObjectMapper objectMapper,
             @Value("${ai.provider}") String provider,
             @Value("${ai.openai.api-key:}") String openaiKey,
             @Value("${ai.openai.model:}") String openaiModel,
             @Value("${ai.claude.api-key:}") String claudeKey,
             @Value("${ai.claude.model:}") String claudeModel) {
+        this.objectMapper = objectMapper;
         this.provider = provider;
         this.openaiKey = openaiKey;
         this.openaiModel = openaiModel;
         this.claudeKey = claudeKey;
         this.claudeModel = claudeModel;
-        this.webClient = WebClient.builder().build();
+        this.httpClient = HttpClient.newHttpClient();
     }
 
     public String chat(List<Map<String, String>> messages) {
@@ -41,21 +49,26 @@ public class AiClient {
         };
     }
 
+    @SuppressWarnings("unchecked")
     private String callOpenAi(List<Map<String, String>> messages) {
         try {
-            var response = webClient.post()
-                    .uri("https://api.openai.com/v1/chat/completions")
-                    .header("Authorization", "Bearer " + openaiKey)
-                    .bodyValue(Map.of(
-                            "model", openaiModel,
-                            "messages", messages,
-                            "max_tokens", 1000
-                    ))
-                    .retrieve()
-                    .bodyToMono(Map.class)
-                    .block();
+            var body = objectMapper.writeValueAsString(Map.of(
+                    "model", openaiModel,
+                    "messages", messages,
+                    "max_tokens", 1000
+            ));
 
-            var choices = (List<?>) response.get("choices");
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.openai.com/v1/chat/completions"))
+                    .header("Authorization", "Bearer " + openaiKey)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(body))
+                    .build();
+
+            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            var result = objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+
+            var choices = (List<?>) result.get("choices");
             if (choices != null && !choices.isEmpty()) {
                 var choice = (Map<?, ?>) choices.get(0);
                 var msg = (Map<?, ?>) choice.get("message");
@@ -67,22 +80,27 @@ public class AiClient {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private String callClaude(List<Map<String, String>> messages) {
         try {
-            var response = webClient.post()
-                    .uri("https://api.anthropic.com/v1/messages")
+            var body = objectMapper.writeValueAsString(Map.of(
+                    "model", claudeModel,
+                    "max_tokens", 1000,
+                    "messages", messages
+            ));
+
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.anthropic.com/v1/messages"))
                     .header("x-api-key", claudeKey)
                     .header("anthropic-version", "2023-06-01")
-                    .bodyValue(Map.of(
-                            "model", claudeModel,
-                            "max_tokens", 1000,
-                            "messages", messages
-                    ))
-                    .retrieve()
-                    .bodyToMono(Map.class)
-                    .block();
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(body))
+                    .build();
 
-            var content = (List<?>) response.get("content");
+            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            var result = objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+
+            var content = (List<?>) result.get("content");
             if (content != null && !content.isEmpty()) {
                 var block = (Map<?, ?>) content.get(0);
                 return (String) block.get("text");
