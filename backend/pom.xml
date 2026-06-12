@@ -20,7 +20,7 @@
     <properties>
         <java.version>17</java.version>
         <jjwt.version>0.12.5</jjwt.version>
-        <tarsos.version>2.5</tarsos.version>
+        <tarsos.version>2.4.1</tarsos.version>
     </properties>
 
     <dependencies>
@@ -67,8 +67,8 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>be.tarsos.dsp</groupId>
-            <artifactId>core</artifactId>
+            <groupId>com.github.st-h</groupId>
+            <artifactId>TarsosDSP</artifactId>
             <version>${tarsos.version}</version>
         </dependency>
         <dependency>
