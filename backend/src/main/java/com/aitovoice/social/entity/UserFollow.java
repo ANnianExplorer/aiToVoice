@@ -4,12 +4,13 @@ import com.aitovoice.common.BaseEntity;
 import com.aitovoice.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "user_follows", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"follower_id", "following_id"})
 })
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @SuperBuilder
 public class UserFollow extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "follower_id", nullable = false)

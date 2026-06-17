@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.aitovoice.common.util.FilePathSanitizer;
+
 import java.nio.file.Files;
 
 @RestController
@@ -26,6 +28,7 @@ public class FileController {
     public ResponseEntity<Resource> getAudio(
             @PathVariable String subDir,
             @PathVariable String filename) {
+        FilePathSanitizer.sanitize(fileStorage.getUploadDir(), subDir + "/" + filename);
         var path = fileStorage.getFilePath(subDir + "/" + filename);
         try {
             var resource = new UrlResource(path.toUri());
@@ -43,6 +46,7 @@ public class FileController {
     public ResponseEntity<Resource> getCover(
             @PathVariable String subDir,
             @PathVariable String filename) {
+        FilePathSanitizer.sanitize(fileStorage.getUploadDir(), subDir + "/" + filename);
         var path = fileStorage.getFilePath(subDir + "/" + filename);
         try {
             var resource = new UrlResource(path.toUri());

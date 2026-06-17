@@ -38,6 +38,10 @@ public class FileStorageService {
         }
     }
 
+    public String getUploadDir() {
+        return uploadDir.toString();
+    }
+
     public Path getFilePath(String relativePath) {
         var path = uploadDir.resolve(relativePath).normalize();
         if (!Files.exists(path)) {

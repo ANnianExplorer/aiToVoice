@@ -4,10 +4,11 @@ import com.aitovoice.common.BaseEntity;
 import com.aitovoice.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "tags")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @SuperBuilder
 public class Tag extends BaseEntity {
     @Column(nullable = false, length = 50)
     private String name;

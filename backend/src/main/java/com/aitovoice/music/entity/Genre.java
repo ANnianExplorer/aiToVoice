@@ -3,10 +3,11 @@ package com.aitovoice.music.entity;
 import com.aitovoice.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "genres")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @SuperBuilder
 public class Genre extends BaseEntity {
     @Column(nullable = false, unique = true, length = 50)
     private String name;

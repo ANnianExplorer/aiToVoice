@@ -3,6 +3,7 @@ package com.aitovoice.music.entity;
 import com.aitovoice.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "songs", indexes = {
@@ -10,7 +11,7 @@ import lombok.*;
         @Index(name = "idx_song_artist", columnList = "artist_id"),
         @Index(name = "idx_song_genre", columnList = "genre_id")
 })
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @SuperBuilder
 public class Song extends BaseEntity {
     @Column(nullable = false, length = 200)
     private String title;
