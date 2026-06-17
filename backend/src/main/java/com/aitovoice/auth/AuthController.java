@@ -4,7 +4,9 @@ import com.aitovoice.auth.dto.AuthResponse;
 import com.aitovoice.auth.dto.LoginRequest;
 import com.aitovoice.auth.dto.RegisterRequest;
 import com.aitovoice.common.ApiResponse;
+import com.aitovoice.user.dto.UserDto;
 import com.aitovoice.user.entity.User;
+import com.aitovoice.user.mapper.UserMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserMapper userMapper;
 
     @Operation(summary = "用户注册", description = "注册新用户账号")
     @PostMapping("/register")
@@ -34,7 +37,7 @@ public class AuthController {
 
     @Operation(summary = "获取当前用户", description = "根据 Token 获取当前登录用户信息")
     @GetMapping("/me")
-    public ApiResponse<User> me(@AuthenticationPrincipal User user) {
-        return ApiResponse.success(user);
+    public ApiResponse<UserDto> me(@AuthenticationPrincipal User user) {
+        return ApiResponse.success(userMapper.toDto(user));
     }
 }

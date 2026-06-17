@@ -1,6 +1,7 @@
 package com.aitovoice.user.entity;
 
 import com.aitovoice.common.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -21,6 +22,7 @@ public class User extends BaseEntity {
     private String email;
 
     @Column(name = "password_hash", nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String passwordHash;
 
     @Column(name = "avatar_url")

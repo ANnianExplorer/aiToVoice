@@ -1,5 +1,6 @@
 package com.aitovoice.user.mapper;
 
+import com.aitovoice.user.dto.UserDto;
 import com.aitovoice.user.dto.UserProfileDto;
 import com.aitovoice.user.entity.User;
 import org.mapstruct.Mapper;
@@ -8,4 +9,6 @@ import org.mapstruct.Mapper;
 public interface UserMapper {
 
     UserProfileDto toProfileDto(User user);
+
+    UserDto toDto(User user);
 }
