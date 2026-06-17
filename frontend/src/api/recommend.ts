@@ -1,5 +1,5 @@
 import client from './client';
-import type { ApiResponse, Song } from '../types';
+import type { Song } from '../types';
 
 interface RecommendItem {
   song: Song;
@@ -9,13 +9,13 @@ interface RecommendItem {
 }
 
 export const getDailyRecommend = () =>
-  client.get<ApiResponse<RecommendItem[]>>('/recommend/daily').then(r => r.data);
+  client.get<RecommendItem[]>('/recommend/daily').then(r => r.data);
 
 export const getRandomFM = () =>
-  client.get<ApiResponse<Song>>('/recommend/fm').then(r => r.data);
+  client.get<Song>('/recommend/fm').then(r => r.data);
 
 export const getSimilarSongs = (songId: number) =>
-  client.get<ApiResponse<Song[]>>(`/recommend/similar/${songId}`).then(r => r.data);
+  client.get<Song[]>(`/recommend/similar/${songId}`).then(r => r.data);
 
 export const submitFeedback = (songId: number, liked: boolean) =>
-  client.post<ApiResponse<void>>('/recommend/feedback', null, { params: { songId, liked } }).then(r => r.data);
+  client.post<void>('/recommend/feedback', null, { params: { songId, liked } }).then(r => r.data);

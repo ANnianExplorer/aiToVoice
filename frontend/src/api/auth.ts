@@ -1,7 +1,7 @@
 import client from './client';
-import type { ApiResponse, User } from '../types';
+import type { User } from '../types';
 
-interface AuthResponse {
+export interface AuthResponse {
   token: string;
   refreshToken: string;
   user: User;
@@ -19,10 +19,10 @@ interface RegisterRequest {
 }
 
 export const login = (data: LoginRequest) =>
-  client.post<ApiResponse<AuthResponse>>('/auth/login', data).then(r => r.data);
+  client.post<AuthResponse>('/auth/login', data).then(r => r.data);
 
 export const register = (data: RegisterRequest) =>
-  client.post<ApiResponse<AuthResponse>>('/auth/register', data).then(r => r.data);
+  client.post<AuthResponse>('/auth/register', data).then(r => r.data);
 
 export const getMe = () =>
-  client.get<ApiResponse<User>>('/auth/me').then(r => r.data);
+  client.get<User>('/auth/me').then(r => r.data);

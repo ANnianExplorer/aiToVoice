@@ -2,31 +2,25 @@ import { useState, useEffect, useRef } from 'react';
 import { Typography, Button, Card, Input, List, Space, message } from 'antd';
 import { RobotOutlined, SendOutlined, AudioOutlined } from '@ant-design/icons';
 import { createSession, getMySessions, getSessionMessages, sendMessage } from '../../api/ai';
+import type { AiSession, AiMessage } from '../../types';
 
 const { Title, Text, Paragraph } = Typography;
 
-interface AiMsg {
-  id: number;
-  role: string;
-  content: string;
-  createdAt: string;
-}
-
 export default function AITeacherPage() {
-  const [sessions, setSessions] = useState<{ id: number; title: string; sessionType: string }[]>([]);
+  const [sessions, setSessions] = useState<AiSession[]>([]);
   const [activeSession, setActiveSession] = useState<number | null>(null);
-  const [messages, setMessages] = useState<AiMsg[]>([]);
+  const [messages, setMessages] = useState<AiMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    getMySessions().then(res => setSessions(res.data || [])).catch(() => {});
+    getMySessions().then(res => setSessions(res || [])).catch(() => {});
   }, []);
 
   useEffect(() => {
     if (activeSession) {
-      getSessionMessages(activeSession).then(res => setMessages(res.data || [])).catch(() => {});
+      getSessionMessages(activeSession).then(res => setMessages(res || [])).catch(() => {});
     }
   }, [activeSession]);
 
@@ -36,8 +30,7 @@ export default function AITeacherPage() {
 
   const handleNewSession = async (type: string) => {
     try {
-      const res = await createSession({ sessionType: type });
-      const session = res.data;
+      const session = await createSession({ sessionType: type });
       setSessions(prev => [session, ...prev]);
       setActiveSession(session.id);
     } catch {
@@ -49,8 +42,8 @@ export default function AITeacherPage() {
     if (!input.trim() || !activeSession) return;
     setLoading(true);
     try {
-      const res = await sendMessage(activeSession, input);
-      setMessages(prev => [...prev, res.data]);
+      const msg = await sendMessage(activeSession, input);
+      setMessages(prev => [...prev, msg]);
       setInput('');
     } catch {
       message.error('发送失败');

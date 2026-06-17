@@ -1,5 +1,4 @@
 import client from './client';
-import type { ApiResponse } from '../types';
 
 interface VoiceRecord {
   id: number;
@@ -40,21 +39,21 @@ export const uploadRecord = (file: File, songId?: number) => {
   const formData = new FormData();
   formData.append('file', file);
   if (songId) formData.append('songId', songId.toString());
-  return client.post<ApiResponse<VoiceRecord>>('/voice/record', formData, {
+  return client.post<VoiceRecord>('/voice/record', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }).then(r => r.data);
 };
 
 export const getMyRecords = () =>
-  client.get<ApiResponse<VoiceRecord[]>>('/voice/records').then(r => r.data);
+  client.get<VoiceRecord[]>('/voice/records').then(r => r.data);
 
 export const analyzeRecord = (id: number) =>
-  client.post<ApiResponse<AnalysisResult>>(`/voice/records/${id}/analyze`).then(r => r.data);
+  client.post<AnalysisResult>(`/voice/records/${id}/analyze`).then(r => r.data);
 
 export const getMyProgress = () =>
-  client.get<ApiResponse<PracticeProgress[]>>('/voice/progress').then(r => r.data);
+  client.get<PracticeProgress[]>('/voice/progress').then(r => r.data);
 
 export const submitPractice = (exerciseId: number, recordId: number) =>
-  client.post<ApiResponse<PracticeProgress>>(`/voice/progress/${exerciseId}/submit`, null, {
+  client.post<PracticeProgress>(`/voice/progress/${exerciseId}/submit`, null, {
     params: { recordId },
   }).then(r => r.data);

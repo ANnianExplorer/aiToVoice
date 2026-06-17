@@ -1,1 +1,20 @@
-"use strict";const e=require("electron");e.contextBridge.exposeInMainWorld("electronAPI",{platform:process.platform,getAppVersion:()=>e.ipcRenderer.invoke("get-app-version"),minimize:()=>e.ipcRenderer.send("window:minimize"),maximize:()=>e.ipcRenderer.send("window:maximize"),close:()=>e.ipcRenderer.send("window:close"),hide:()=>e.ipcRenderer.send("window:hide"),onMediaCommand:i=>{e.ipcRenderer.on("media-command",(r,n)=>i(n))},removeMediaCommandListener:()=>{e.ipcRenderer.removeAllListeners("media-command")}});
+"use strict";
+const electron = require("electron");
+electron.contextBridge.exposeInMainWorld("electronAPI", {
+  // Platform info
+  platform: process.platform,
+  getAppVersion: () => electron.ipcRenderer.invoke("get-app-version"),
+  // Window controls
+  minimize: () => electron.ipcRenderer.send("window:minimize"),
+  maximize: () => electron.ipcRenderer.send("window:maximize"),
+  close: () => electron.ipcRenderer.send("window:close"),
+  hide: () => electron.ipcRenderer.send("window:hide"),
+  // Media commands from global shortcuts
+  onMediaCommand: (callback) => {
+    electron.ipcRenderer.on("media-command", (_event, command) => callback(command));
+  },
+  // Remove listener
+  removeMediaCommandListener: () => {
+    electron.ipcRenderer.removeAllListeners("media-command");
+  }
+});

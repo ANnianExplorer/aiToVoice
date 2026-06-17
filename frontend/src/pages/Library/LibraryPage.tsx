@@ -14,13 +14,12 @@ export default function LibraryPage() {
   const { setCurrentSong, setPlaylist } = usePlayerStore();
 
   useEffect(() => {
-    const emptyResp = { data: [] as Song[], code: 0, message: '' };
     Promise.all([
-      getFavorites().catch(() => emptyResp),
-      getHistory().catch(() => emptyResp),
+      getFavorites().catch(() => [] as Song[]),
+      getHistory().catch(() => [] as Song[]),
     ]).then(([fav, hist]) => {
-      setFavorites(fav.data || []);
-      setHistory(hist.data || []);
+      setFavorites(fav);
+      setHistory(hist);
     }).finally(() => setLoading(false));
   }, []);
 

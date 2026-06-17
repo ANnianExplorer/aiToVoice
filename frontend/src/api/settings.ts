@@ -1,5 +1,4 @@
 import client from './client';
-import type { ApiResponse } from '../types';
 
 interface UserSettings {
   theme: string;
@@ -17,7 +16,7 @@ interface UserSettings {
 }
 
 export const getSettings = () =>
-  client.get<ApiResponse<UserSettings>>('/settings').then(r => r.data);
+  client.get<UserSettings>('/settings').then(r => r.data);
 
 export const updateSettings = (data: Partial<UserSettings>) =>
-  client.put<ApiResponse<UserSettings>>('/settings', data).then(r => r.data);
+  client.put<UserSettings>('/settings', data).then(r => r.data);
