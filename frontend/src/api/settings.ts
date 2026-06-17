@@ -17,7 +17,7 @@ interface UserSettings {
 }
 
 export const getSettings = () =>
-  client.get<ApiResponse<UserSettings>>('/settings');
+  client.get<ApiResponse<UserSettings>>('/settings').then(r => r.data);
 
 export const updateSettings = (data: Partial<UserSettings>) =>
-  client.put<ApiResponse<UserSettings>>('/settings', data);
+  client.put<ApiResponse<UserSettings>>('/settings', data).then(r => r.data);

@@ -42,19 +42,19 @@ export const uploadRecord = (file: File, songId?: number) => {
   if (songId) formData.append('songId', songId.toString());
   return client.post<ApiResponse<VoiceRecord>>('/voice/record', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  }).then(r => r.data);
 };
 
 export const getMyRecords = () =>
-  client.get<ApiResponse<VoiceRecord[]>>('/voice/records');
+  client.get<ApiResponse<VoiceRecord[]>>('/voice/records').then(r => r.data);
 
 export const analyzeRecord = (id: number) =>
-  client.post<ApiResponse<AnalysisResult>>(`/voice/records/${id}/analyze`);
+  client.post<ApiResponse<AnalysisResult>>(`/voice/records/${id}/analyze`).then(r => r.data);
 
 export const getMyProgress = () =>
-  client.get<ApiResponse<PracticeProgress[]>>('/voice/progress');
+  client.get<ApiResponse<PracticeProgress[]>>('/voice/progress').then(r => r.data);
 
 export const submitPractice = (exerciseId: number, recordId: number) =>
   client.post<ApiResponse<PracticeProgress>>(`/voice/progress/${exerciseId}/submit`, null, {
     params: { recordId },
-  });
+  }).then(r => r.data);

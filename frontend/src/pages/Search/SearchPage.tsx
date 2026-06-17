@@ -21,7 +21,7 @@ export default function SearchPage() {
     setLoading(true);
     try {
       const res = await searchSongs(value);
-      setResults(res.data.data?.content || []);
+      setResults(res.data?.content || []);
     } catch {
       message.error('搜索失败');
     } finally {

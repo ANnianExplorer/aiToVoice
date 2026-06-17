@@ -14,12 +14,13 @@ export default function HomePage() {
   const { setCurrentSong, setPlaylist } = usePlayerStore();
 
   useEffect(() => {
+    const emptyResp = { data: [] as Song[], code: 0, message: '' };
     Promise.all([
-      getHotSongs(20).catch(() => ({ data: { data: [] } })),
-      getNewSongs(20).catch(() => ({ data: { data: [] } })),
+      getHotSongs(20).catch(() => emptyResp),
+      getNewSongs(20).catch(() => emptyResp),
     ]).then(([hot, newS]) => {
-      setHotSongs(hot.data.data || []);
-      setNewSongs(newS.data.data || []);
+      setHotSongs(hot.data || []);
+      setNewSongs(newS.data || []);
     }).finally(() => setLoading(false));
   }, []);
 

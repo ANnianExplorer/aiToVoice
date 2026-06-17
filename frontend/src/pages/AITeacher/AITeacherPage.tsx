@@ -21,12 +21,12 @@ export default function AITeacherPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    getMySessions().then(res => setSessions(res.data.data || [])).catch(() => {});
+    getMySessions().then(res => setSessions(res.data || [])).catch(() => {});
   }, []);
 
   useEffect(() => {
     if (activeSession) {
-      getSessionMessages(activeSession).then(res => setMessages(res.data.data || [])).catch(() => {});
+      getSessionMessages(activeSession).then(res => setMessages(res.data || [])).catch(() => {});
     }
   }, [activeSession]);
 
@@ -37,7 +37,7 @@ export default function AITeacherPage() {
   const handleNewSession = async (type: string) => {
     try {
       const res = await createSession({ sessionType: type });
-      const session = res.data.data;
+      const session = res.data;
       setSessions(prev => [session, ...prev]);
       setActiveSession(session.id);
     } catch {
@@ -50,7 +50,7 @@ export default function AITeacherPage() {
     setLoading(true);
     try {
       const res = await sendMessage(activeSession, input);
-      setMessages(prev => [...prev, res.data.data]);
+      setMessages(prev => [...prev, res.data]);
       setInput('');
     } catch {
       message.error('发送失败');

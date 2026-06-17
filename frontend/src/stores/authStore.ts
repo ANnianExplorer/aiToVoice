@@ -22,7 +22,7 @@ export const useAuthStore = create<AuthState>()(
       login: async (username, password) => {
         const res = await authApi.login({ username, password });
         set({
-          user: res.data.user,
+          user: { ...res.data.user, role: res.data.user.role as 'USER' | 'ADMIN' },
           token: res.data.token,
           isAuthenticated: true,
         });
@@ -32,7 +32,7 @@ export const useAuthStore = create<AuthState>()(
       register: async (username, email, password) => {
         const res = await authApi.register({ username, email, password });
         set({
-          user: res.data.user,
+          user: { ...res.data.user, role: res.data.user.role as 'USER' | 'ADMIN' },
           token: res.data.token,
           isAuthenticated: true,
         });

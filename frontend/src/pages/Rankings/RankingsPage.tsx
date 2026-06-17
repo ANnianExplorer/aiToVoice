@@ -20,14 +20,15 @@ export default function RankingsPage() {
   const { setCurrentSong, setPlaylist } = usePlayerStore();
 
   useEffect(() => {
+    const emptyResp = { data: [] as RankingItem[], code: 0, message: '' };
     Promise.all([
-      getHotRanking().catch(() => ({ data: { data: [] } })),
-      getNewRanking().catch(() => ({ data: { data: [] } })),
-      getRisingRanking().catch(() => ({ data: { data: [] } })),
+      getHotRanking().catch(() => emptyResp),
+      getNewRanking().catch(() => emptyResp),
+      getRisingRanking().catch(() => emptyResp),
     ]).then(([h, n, r]) => {
-      setHot(h.data.data || []);
-      setNewSongs(n.data.data || []);
-      setRising(r.data.data || []);
+      setHot(h.data || []);
+      setNewSongs(n.data || []);
+      setRising(r.data || []);
     }).finally(() => setLoading(false));
   }, []);
 

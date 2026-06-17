@@ -23,7 +23,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     getSettings().then(res => {
-      setSettings(res.data.data);
+      setSettings(res.data);
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 

@@ -28,10 +28,10 @@ interface RegisterRequest {
 }
 
 export const login = (data: LoginRequest) =>
-  client.post<ApiResponse<AuthResponse>>('/auth/login', data);
+  client.post<ApiResponse<AuthResponse>>('/auth/login', data).then(r => r.data);
 
 export const register = (data: RegisterRequest) =>
-  client.post<ApiResponse<AuthResponse>>('/auth/register', data);
+  client.post<ApiResponse<AuthResponse>>('/auth/register', data).then(r => r.data);
 
 export const getMe = () =>
-  client.get<ApiResponse<AuthResponse['user']>>('/auth/me');
+  client.get<ApiResponse<AuthResponse['user']>>('/auth/me').then(r => r.data);

@@ -9,13 +9,13 @@ interface RecommendItem {
 }
 
 export const getDailyRecommend = () =>
-  client.get<ApiResponse<RecommendItem[]>>('/recommend/daily');
+  client.get<ApiResponse<RecommendItem[]>>('/recommend/daily').then(r => r.data);
 
 export const getRandomFM = () =>
-  client.get<ApiResponse<Song>>('/recommend/fm');
+  client.get<ApiResponse<Song>>('/recommend/fm').then(r => r.data);
 
 export const getSimilarSongs = (songId: number) =>
-  client.get<ApiResponse<Song[]>>(`/recommend/similar/${songId}`);
+  client.get<ApiResponse<Song[]>>(`/recommend/similar/${songId}`).then(r => r.data);
 
 export const submitFeedback = (songId: number, liked: boolean) =>
-  client.post<ApiResponse<void>>('/recommend/feedback', null, { params: { songId, liked } });
+  client.post<ApiResponse<void>>('/recommend/feedback', null, { params: { songId, liked } }).then(r => r.data);
