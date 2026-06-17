@@ -65,30 +65,79 @@
 
 ---
 
-## 免费音乐源调研
+## 免费音乐源调研（2026-06-17 实测）
 
-### 全量播放（完整歌曲）
+### ⭐ Audius — 首选（零配置，全量播放）
 
-| API | 全量播放 | 需要认证 | 需要自部署 | 内容 | 适合场景 |
-|-----|---------|---------|-----------|------|---------|
-| **NeteaseCloudMusicApi** | ✅ 完整 | ❌ | ✅ Node.js/Docker | 网易云全量（中文主流） | 中文曲库、歌词、歌单 |
-| **Audius** | ✅ 完整 | ❌ (app_name) | ❌ | 独立音乐人作品 | 免费发现、无门槛 |
-| **Jamendo** | ✅ 完整 | 免费 key | ❌ | CC 协议独立音乐 | 版权安全、背景音乐 |
+**状态**：✅ 正常运行，API 已实测可用
 
-### 仅预览（30 秒片段）
+- **认证**：无需注册，仅需 `?app_name=任意字符串`
+- **全量播放**：✅ 完整 MP3（3-5 分钟），非 30s 预览
+- **CORS**：✅ `access-control-allow-origin: *`，浏览器可直接播放
+- **流式传输**：`GET /v1/tracks/{id}/stream?app_name=x` → 302 重定向到 CDN 签名 URL → 返回完整 MP3
 
-| API | 预览时长 | 需要认证 | 内容 | 适合场景 |
-|-----|---------|---------|------|---------|
-| **iTunes Search** | 30s | ❌ | Apple Music 曲库 | 快速搜索、封面图 |
-| **Deezer** | 30s | ❌ | Deezer 曲库 | 快速搜索 |
-| **Spotify** | 30s | OAuth | Spotify 曲库 | 元数据、推荐 |
+**实测可用端点**：
 
-### 仅元数据（无播放）
+| 端点 | 说明 |
+|------|------|
+| `GET /v1/tracks/trending?limit={n}&app_name=x` | 热门歌曲 |
+| `GET /v1/tracks/search?query={text}&genre={genre}&app_name=x` | 搜索歌曲 |
+| `GET /v1/tracks/{id}?app_name=x` | 歌曲详情 |
+| `GET /v1/tracks/{id}/stream?app_name=x` | 流式播放（302→CDN） |
+| `GET /v1/playlists/search?query={text}&app_name=x` | 搜索歌单 |
+| `GET /v1/users/search?query={text}&app_name=x` | 搜索艺术家 |
 
-| API | 需要认证 | 内容 | 适合场景 |
-|-----|---------|------|---------|
-| **MusicBrainz** | ❌ | 音乐百科 | 歌手/专辑信息补充 |
-| **Last.fm** | 免费 key | 听众数据 | 相似歌曲、标签、热度 |
+**Discovery Provider**：`https://discoveryprovider.audius.co/v1/`（也可通过 `https://api.audius.co` 获取当前活跃节点）
+
+**曲库**：百万级，以独立音乐人为主。电子/Hip-Hop/Indie 强，无主流商业音乐。支持 Genre：Electronic, House, Jazz, Pop, Hip-Hop, R&B, Rock, Metal, Country, Reggae, Ambient, Folk 等。
+
+**限流**：无硬限制，读操作基本不限。
+
+---
+
+### NeteaseCloudMusicApi Enhanced — 中文曲库补充
+
+**状态**：⚠️ 原仓库 `Binaryify/NeteaseCloudMusicApi` 已归档（2024-02-28），社区 fork 活跃维护中
+
+- **社区 fork**：`NeteaseCloudMusicApiEnhanced/api-enhanced`（2026-06-13 更新，1160 stars，v4.35.1）
+- **部署**：`npm install @neteasecloudmusicapienhanced/api` 或 Docker `moefurina/ncm-api`，运行在 port 3000
+- **全量播放**：✅ 非 VIP 歌曲可直接获取 CDN 播放地址；VIP 歌曲需 VIP 账号 Cookie
+- **曲库**：海量（网易云全量），中文主流音乐全覆盖
+- **风险**：非官方逆向 API，可能随时失效或有法律风险
+
+**关键端点**：
+
+| 端点 | 说明 |
+|------|------|
+| `GET /song/url?id={id}&br={bitrate}` | 获取播放地址（最高 999kbps 无损） |
+| `GET /song/detail?ids={id}` | 歌曲详情 |
+| `GET /search?keywords={text}` | 搜索 |
+| `GET /cloudsearch?keywords={text}` | 云搜索（更全） |
+
+---
+
+### Jamendo — CC 协议版权安全
+
+**状态**：⚠️ 可用但需注册
+
+- **认证**：需在 `developer.jamendo.com` 注册获取 `client_id`（免费）
+- **全量播放**：✅ MP3 128/320kbps、OGG、FLAC
+- **曲库**：~50 万+，全部 CC 协议授权，独立音乐为主
+- **限流**：50 万次/应用后需联系 Jamendo
+- **注意**：文档中的测试 `client_id` 已被停用，必须自行注册
+
+---
+
+### 已排除的方案
+
+| API | 原因 |
+|-----|------|
+| SoundCloud | 需付费 Artist Pro 订阅才能获取 client_id |
+| ccMixter | API 返回 404，已停运 |
+| Free Music Archive | 无公开 API |
+| Pixabay Music | 库存音乐，非音乐流媒体 |
+
+---
 
 ### 推荐集成方案
 
@@ -96,22 +145,23 @@
 
 ```
 前端 → Java 后端 → MusicSourceProvider 接口
-                         ├── AudiusProvider (免费、无门槛、全量播放)
-                         ├── NeteaseProvider (中文主流、歌词、需自部署)
-                         ├── JamendoProvider (CC 协议、版权安全)
-                         └── iTunesProvider (搜索补充、封面图)
+                         ├── AudiusProvider    ⭐ 首选：零配置、全量播放、CORS 友好
+                         ├── NeteaseProvider    中文曲库：需 Docker 部署
+                         ├── JamendoProvider    CC 协议：需注册 client_id
+                         └── LocalProvider      本地上传的歌曲
 ```
 
 **Phase 1.6 实现优先级**：
-1. **Audius** — 零配置，即刻可用，全量播放
-2. **NeteaseCloudMusicApi** — Docker 部署，中文曲库补充
-3. **iTunes Search** — 搜索补充 + 高清封面图
+1. **Audius** — 即刻可用，全量播放，作为默认音乐源
+2. **NeteaseCloudMusicApi Enhanced** — Docker 一键部署，中文曲库补充
+3. **Jamendo** — 注册后接入，版权安全的 CC 音乐
 
 **Java 集成方式**：
-- 创建 `MusicSourceProvider` 接口（search, getStreamUrl, getLyrics）
+- 创建 `MusicSourceProvider` 接口（`search`, `getStreamUrl`, `getTrackDetail`）
 - 各实现类用 `HttpClient` 调用 REST API
+- Audius 的流式播放：后端代理 302 重定向，或直接将 CDN URL 返回前端
 - `MusicSourceService` 聚合多个 Provider，去重返回统一结果
-- Song 实体的 `sourceType` 枚举扩展：`LOCAL, NETEASE, AUDIUS, JAMENDO`
+- Song 实体的 `sourceType` 枚举扩展：`LOCAL, AUDIUS, NETEASE, JAMENDO`
 
 ---
 
