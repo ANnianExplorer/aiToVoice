@@ -1,4 +1,15 @@
-# AiToVoice 实施计划
+# AiToVoice 实施计划（历史参考）
+
+> ⚠️ **注意**：此文档为 v1.0 阶段的原始实施计划，已在 Phase 0 架构重整中部分过时。以下代码模板已被更新：
+> - `client.ts`: baseURL 已外部化为 `import.meta.env.VITE_API_BASE_URL`
+> - `authStore.ts`: token 已统一由 Zustand persist 管理
+> - `useAudio.ts`: 进度追踪改为本地 ref + 500ms 同步
+> - `AppLayout.tsx`: 已添加 `paddingBottom: 114` 和 `paddingTop: 32`
+> - `SecurityConfig.java`: 已添加 `@EnableMethodSecurity` 和 CORS
+> - `AuthService.java`: 已添加 `DataIntegrityViolationException` 捕获
+> - Entity 计数: 已改为 `@Modifying @Query` 原子递增
+>
+> 当前代码以实际代码库为准。Phase 0 设计文档见 [2026-06-17-phase0-architecture-repair-design.md](../specs/2026-06-17-phase0-architecture-repair-design.md)。
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

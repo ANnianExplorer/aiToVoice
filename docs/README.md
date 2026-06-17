@@ -40,7 +40,8 @@
 | 文档 | 说明 | 路径 |
 |------|------|------|
 | 设计文档总览 | 项目整体设计（索引性质） | [superpowers/specs/2026-06-10-aitovoice-design.md](superpowers/specs/2026-06-10-aitovoice-design.md) |
-| 实施计划 | 分阶段实施步骤 | [superpowers/plans/2026-06-10-aitovoice-implementation.md](superpowers/plans/2026-06-10-aitovoice-implementation.md) |
+| 实施计划 | 分阶段实施步骤（历史参考） | [superpowers/plans/2026-06-10-aitovoice-implementation.md](superpowers/plans/2026-06-10-aitovoice-implementation.md) |
+| Phase 0 架构重整设计 | 安全修复、后端质量、前端质量的完整设计 | [superpowers/specs/2026-06-17-phase0-architecture-repair-design.md](superpowers/specs/2026-06-17-phase0-architecture-repair-design.md) |
 
 ---
 

@@ -151,10 +151,28 @@ songs ──┬── artists (N:1)
 
 ## 种子数据
 
-`init.sql` 包含以下初始数据：
+### init.sql（手动执行）
 
 - **10 个默认流派**: Pop, Rock, Jazz, Classical, R&B, Hip-Hop, Electronic, Folk, Country, Blues
 - **1 个管理员账号**: admin / admin123
 - **10 个练习任务**: 覆盖 BREATH, PITCH, RHYTHM, VIBRATO 四种类型
 
 完整 SQL 脚本位于: `backend/src/main/resources/db/init.sql`
+
+### DataInitializer（自动执行）
+
+应用启动时，如果 songs 表为空，自动插入演示数据：
+
+- **8 个流派**: Pop, Rock, Jazz, Classical, R&B, Hip-Hop, Electronic, Folk（如已存在则复用）
+- **8 位歌手**: 周杰伦、林俊杰、陈奕迅、邓紫棋、薛之谦、Taylor Swift、Ed Sheeran、Adele
+- **30 首歌曲**: 关联歌手和流派，播放量/点赞量随机生成
+
+代码位于: `backend/src/main/java/com/aitovoice/config/DataInitializer.java`
+
+### comments 表变更
+
+`comments.content` 字段类型为 `VARCHAR(2000) NOT NULL`（非 TEXT），配合 `@NotBlank` 校验。
+
+### JDBC 连接
+
+`characterEncoding=UTF-8`（Java 字符集名称，驱动自动映射到 MySQL utf8mb4）。

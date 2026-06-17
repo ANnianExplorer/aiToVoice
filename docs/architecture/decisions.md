@@ -182,3 +182,102 @@ common, config, auth, user, music, social, voice
 | ranking | music | 排行榜是歌曲排序展示 |
 | file | music | 文件服务主要给歌曲上传用 |
 | ai | voice | AI 老师是声乐训练的一部分 |
+
+---
+
+## ADR-7: 路径穿越防护方案
+
+**状态**: 已采纳  
+**决策时间**: 2026-06-17（Phase 0）
+
+### 背景
+
+FileController 的 `subDir` 和 `filename` 路径变量直接拼接，攻击者可用 `../` 读取服务器任意文件。
+
+### 备选方案
+
+| 方案 | 描述 | 优点 | 缺点 |
+|------|------|------|------|
+| A: Controller 层校验 | 在每个 Controller 方法中手动检查路径 | 简单直接 | 容易遗漏，不可复用 |
+| B: 工具类统一校验（已采纳） | `FilePathSanitizer` 工具类，canonical 解析 + 白名单 | 统一入口，可测试，不易遗漏 | 多一层抽象 |
+
+### 决策
+
+选择方案 B，创建 `common/util/FilePathSanitizer.java`。
+
+---
+
+## ADR-8: 密码哈希保护方案
+
+**状态**: 已采纳  
+**决策时间**: 2026-06-17（Phase 0）
+
+### 背景
+
+`AuthController.me()` 返回完整 User 实体，JSON 中包含 `passwordHash`。
+
+### 备选方案
+
+| 方案 | 描述 | 优点 | 缺点 |
+|------|------|------|------|
+| A: 仅 @JsonIgnore | 在字段上加 @JsonIgnore | 最简单 | 完全不可序列化，其他场景也可能需要 |
+| B: @JsonProperty(WRITE_ONLY) + UserDto（已采纳） | 双重保护：注解兜底 + DTO 控制返回字段 | 防御纵深，即使其他端点误返回 User 也不泄漏 | 需要维护 DTO 和 Mapper |
+
+### 决策
+
+选择方案 B。`@JsonProperty(WRITE_ONLY)` 作为安全网，`UserDto` 作为正式返回类型。
+
+---
+
+## ADR-9: 软删除规范化方案
+
+**状态**: 已采纳  
+**决策时间**: 2026-06-17（Phase 0）
+
+### 背景
+
+BaseEntity 有 `deletedAt` 字段但无 Hibernate 自动过滤，每个查询都要手动过滤已删除记录。
+
+### 决策
+
+在所有 20 个 Entity 类上添加 `@Where(clause = "deleted_at IS NULL")` + `@SQLDelete(sql = "UPDATE <table> SET deleted_at = NOW() WHERE id = ?")`。Hibernate 查询自动排除已删除记录，软删除操作自动转为 UPDATE。
+
+---
+
+## ADR-10: 并发计数器方案
+
+**状态**: 已采纳  
+**决策时间**: 2026-06-17（Phase 0）
+
+### 背景
+
+`song.setPlayCount(song.getPlayCount() + 1)` 是 read-modify-write 模式，并发请求下会丢失更新。
+
+### 备选方案
+
+| 方案 | 描述 | 优点 | 缺点 |
+|------|------|------|------|
+| A: @Version 乐观锁 | Entity 加 version 字段 | JPA 原生支持 | 需要重试逻辑，高并发下冲突多 |
+| B: @Modifying @Query 原子递增（已采纳） | `UPDATE Song s SET s.playCount = s.playCount + 1 WHERE s.id = :id` | 无冲突，数据库层面保证原子性 | 绕过 Entity 缓存，需手动 @Modifying |
+
+### 决策
+
+选择方案 B。对 `playCount`、`likeCount`、`likesCount` 等高频并发字段使用原子 SQL 递增。
+
+---
+
+## ADR-11: 前端 API 响应链规范
+
+**状态**: 已采纳  
+**决策时间**: 2026-06-17（Phase 0）
+
+### 背景
+
+Axios 拦截器返回 `response.data`（解包 Axios 层），但消费者对数据访问方式不一致：有的用 `res.data`，有的用 `res.data.data`。
+
+### 决策
+
+统一三层规范：
+1. **拦截器**：`response.data` → 返回 `ApiResponse<T>`
+2. **API 函数**：`.then(r => r.data)` → 返回 `T`
+3. **消费者**：直接使用数据（`res.user`、`hot` 是 `Song[]`）

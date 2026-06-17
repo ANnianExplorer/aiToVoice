@@ -66,7 +66,7 @@ components/
 
 ### Store 规范
 
-- 使用 `persist` 中间件持久化关键状态
+- 使用 `persist` 中间件持久化关键状态（token 由 Zustand persist 统一管理，不使用独立 localStorage）
 - Action 和 State 分开定义
 - 避免在 store 中写业务逻辑
 
@@ -90,19 +90,28 @@ api/
 └── recommend.ts    # 推荐 API
 ```
 
+### API 响应链规范
+
+Axios 拦截器解包 Axios 层，API 函数解包 ApiResponse 层，消费者直接使用数据：
+
+```
+拦截器: response.data → ApiResponse<T>
+API函数: .then(r => r.data) → T
+消费者: 直接使用 (res.user, songs 是 Song[])
+```
+
 ### 错误处理
 
 ```typescript
-// API 拦截器统一处理 401
+// API 拦截器统一处理 401（token 从 Zustand persist 读取）
 if (error.response?.status === 401) {
-  localStorage.removeItem('token');
   window.location.href = '/login';
 }
 
 // 页面级 try/catch
 try {
-  const res = await getHotSongs();
-  setSongs(res.data.data);
+  const songs = await getHotSongs(20);
+  setSongs(songs);  // songs 已经是 Song[]
 } catch (err) {
   message.error('加载失败');
 }

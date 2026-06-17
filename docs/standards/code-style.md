@@ -26,9 +26,8 @@ else if (role == USER) return "普通用户";
 
 **Stream API**（替代 for 循环做转换/过滤/聚合）:
 ```java
-// ✅ 正确
+// ✅ 正确（@Where 自动过滤已删除记录，无需手动检查 deletedAt）
 List<SongDto> hotSongs = songRepository.findHotSongs().stream()
-    .filter(song -> song.getDeletedAt() == null)
     .sorted(Comparator.comparing(Song::getPlayCount).reversed())
     .map(songMapper::toDto)
     .limit(50)
@@ -37,9 +36,7 @@ List<SongDto> hotSongs = songRepository.findHotSongs().stream()
 // ❌ 错误
 List<SongDto> hotSongs = new ArrayList<>();
 for (Song song : songRepository.findHotSongs()) {
-    if (song.getDeletedAt() == null) {
-        hotSongs.add(songMapper.toDto(song));
-    }
+    hotSongs.add(songMapper.toDto(song));
 }
 ```
 
@@ -210,19 +207,25 @@ export default function SongCard({ song, onPlay }: SongCardProps) {
 
 ### 4. API 调用规范
 
+Axios 拦截器解包 Axios 层，API 函数解包 ApiResponse 层，消费者直接使用数据：
+
 ```tsx
-// ✅ 正确 - 统一错误处理
+// ✅ 正确 - API 函数返回 T，消费者直接使用
 const handleSearch = async (keyword: string) => {
   setLoading(true);
   try {
-    const res = await searchSongs(keyword);
-    setResults(res.data.data?.content || []);
+    const res = await searchSongs(keyword);  // res 是 PageResponse<Song>
+    setResults(res?.content || []);
   } catch (err) {
     message.error('搜索失败');
   } finally {
     setLoading(false);
   }
 };
+
+// ❌ 错误 - 旧的双重解包模式
+const res = await searchSongs(keyword);
+setResults(res.data.data?.content || []);  // res.data.data 是 undefined
 ```
 
 ---
