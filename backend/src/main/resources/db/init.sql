@@ -264,7 +264,7 @@ CREATE TABLE IF NOT EXISTS comments (
     user_id     BIGINT   NOT NULL,
     song_id     BIGINT   NOT NULL,
     parent_id   BIGINT            DEFAULT NULL,
-    content     TEXT              DEFAULT NULL,
+    content     VARCHAR(2000)     NOT NULL,
     likes_count BIGINT            DEFAULT 0,
     created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
