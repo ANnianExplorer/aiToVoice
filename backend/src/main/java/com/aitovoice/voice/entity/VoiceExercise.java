@@ -4,9 +4,13 @@ import com.aitovoice.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "voice_exercises")
+@Where(clause = "deleted_at IS NULL")
+@SQLDelete(sql = "UPDATE voice_exercises SET deleted_at = NOW() WHERE id = ?")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @SuperBuilder
 public class VoiceExercise extends BaseEntity {
     @Column(nullable = false, length = 200)

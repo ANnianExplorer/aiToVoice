@@ -10,6 +10,7 @@ import com.aitovoice.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class RecommendService {
     private final SongRepository songRepository;
     private final SongMapper songMapper;
 
+    @Transactional(readOnly = true)
     public List<RecommendDto> getDailyRecommend(Long userId) {
         return recommendRepository.findByUserIdAndDeletedAtIsNullOrderByScoreDesc(
                 userId, PageRequest.of(0, 30)).stream()
@@ -29,6 +31,7 @@ public class RecommendService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public SongDto getRandomForFM(Long userId) {
         var songs = songRepository.findAll(PageRequest.of(0, 100)).getContent();
         if (songs.isEmpty()) return null;
@@ -36,6 +39,7 @@ public class RecommendService {
         return songMapper.toDto(random);
     }
 
+    @Transactional(readOnly = true)
     public List<SongDto> getSimilar(Long songId) {
         var song = songRepository.findById(songId).orElse(null);
         if (song == null || song.getGenre() == null) return List.of();

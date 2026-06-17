@@ -19,6 +19,7 @@ public class LyricsService {
     private final LyricsRepository lyricsRepository;
     private static final Pattern LRC_TIME_PATTERN = Pattern.compile("\\[(\\d{2}):(\\d{2})\\.(\\d{2,3})\\](.*)");
 
+    @Transactional(readOnly = true)
     public String getLyrics(Long songId) {
         return lyricsRepository.findBySongId(songId)
                 .map(Lyrics::getContent)

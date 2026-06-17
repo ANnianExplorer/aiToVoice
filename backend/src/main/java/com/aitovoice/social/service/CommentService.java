@@ -32,6 +32,7 @@ public class CommentService {
         return toDto(comment);
     }
 
+    @Transactional(readOnly = true)
     public Page<CommentDto> getBySong(Long songId, int page, int size) {
         return commentRepository.findBySongIdAndParentIsNullAndDeletedAtIsNullOrderByCreatedAtDesc(
                 songId, PageRequest.of(page, size)).map(this::toDto);

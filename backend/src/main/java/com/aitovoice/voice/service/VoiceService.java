@@ -71,11 +71,13 @@ public class VoiceService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<VoiceRecordDto> getUserRecords(Long userId) {
         return recordRepository.findByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(userId).stream()
                 .map(this::toDto).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<PracticeProgressDto> getUserProgress(Long userId) {
         return progressRepository.findByUserIdAndDeletedAtIsNull(userId).stream()
                 .map(this::toProgressDto).toList();

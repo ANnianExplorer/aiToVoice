@@ -14,6 +14,7 @@ public class UserSettingsService {
 
     private final UserSettingsRepository settingsRepository;
 
+    @Transactional(readOnly = true)
     public UserSettingsDto getSettings(Long userId) {
         var settings = settingsRepository.findByUserId(userId)
                 .orElseGet(() -> createDefault(userId));

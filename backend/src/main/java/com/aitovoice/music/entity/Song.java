@@ -4,6 +4,8 @@ import com.aitovoice.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "songs", indexes = {
@@ -11,6 +13,8 @@ import lombok.experimental.SuperBuilder;
         @Index(name = "idx_song_artist", columnList = "artist_id"),
         @Index(name = "idx_song_genre", columnList = "genre_id")
 })
+@Where(clause = "deleted_at IS NULL")
+@SQLDelete(sql = "UPDATE songs SET deleted_at = NOW() WHERE id = ?")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @SuperBuilder
 public class Song extends BaseEntity {
     @Column(nullable = false, length = 200)

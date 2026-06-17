@@ -4,11 +4,15 @@ import com.aitovoice.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "rankings")
+@Where(clause = "deleted_at IS NULL")
+@SQLDelete(sql = "UPDATE rankings SET deleted_at = NOW() WHERE id = ?")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @SuperBuilder
 public class Ranking extends BaseEntity {
     @Enumerated(EnumType.STRING)

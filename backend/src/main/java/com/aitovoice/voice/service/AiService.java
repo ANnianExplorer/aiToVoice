@@ -59,11 +59,13 @@ public class AiService {
         return toSessionDto(session);
     }
 
+    @Transactional(readOnly = true)
     public List<AiSessionDto> getUserSessions(Long userId) {
         return sessionRepository.findByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(userId).stream()
                 .map(this::toSessionDto).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<AiMessageDto> getSessionMessages(Long sessionId) {
         return messageRepository.findBySessionIdOrderByCreatedAtAsc(sessionId).stream()
                 .map(this::toMessageDto).toList();

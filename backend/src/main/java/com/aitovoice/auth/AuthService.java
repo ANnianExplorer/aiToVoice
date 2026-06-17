@@ -24,6 +24,12 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        if (request.username() == null || request.username().length() < 3 || request.username().length() > 20) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "用户名长度 3-20 个字符");
+        }
+        if (request.password() == null || request.password().length() < 8) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "密码长度不能少于 8 个字符");
+        }
         if (userRepository.existsByUsername(request.username())) {
             throw new BusinessException(ErrorCode.USER_ALREADY_EXISTS);
         }
@@ -38,10 +44,15 @@ public class AuthService {
                 .nickname(request.username())
                 .build();
 
-        userRepository.save(user);
+        try {
+            userRepository.save(user);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            throw new BusinessException(ErrorCode.USER_ALREADY_EXISTS, "用户名或邮箱已被占用");
+        }
         return buildAuthResponse(user);
     }
 
+    @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         var user = userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_INVALID_CREDENTIALS));

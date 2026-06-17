@@ -39,12 +39,14 @@ public class PlaylistService {
         return toDto(playlist);
     }
 
+    @Transactional(readOnly = true)
     public PlaylistDto getById(Long id) {
         var playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PLAYLIST_NOT_FOUND));
         return toDto(playlist);
     }
 
+    @Transactional(readOnly = true)
     public List<PlaylistDto> getMyPlaylists(Long userId) {
         return playlistRepository.findByUserIdAndDeletedAtIsNull(userId).stream()
                 .map(this::toDto)
@@ -86,6 +88,7 @@ public class PlaylistService {
         playlistRepository.save(playlist);
     }
 
+    @Transactional(readOnly = true)
     public List<SongDto> getPlaylistSongs(Long playlistId) {
         return playlistSongRepository.findByPlaylistIdOrderBySortOrder(playlistId).stream()
                 .map(ps -> songMapper.toDto(ps.getSong()))

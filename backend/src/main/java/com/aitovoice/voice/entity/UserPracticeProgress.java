@@ -5,6 +5,8 @@ import com.aitovoice.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +14,8 @@ import java.time.LocalDateTime;
 @Table(name = "user_practice_progress", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "exercise_id"})
 })
+@Where(clause = "deleted_at IS NULL")
+@SQLDelete(sql = "UPDATE user_practice_progress SET deleted_at = NOW() WHERE id = ?")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @SuperBuilder
 public class UserPracticeProgress extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)

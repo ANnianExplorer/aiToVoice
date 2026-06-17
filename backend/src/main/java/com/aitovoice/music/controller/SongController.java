@@ -7,6 +7,9 @@ import com.aitovoice.music.service.SongService;
 import com.aitovoice.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -34,19 +37,19 @@ public class SongController {
 
     @Operation(summary = "搜索歌曲", description = "按关键词、歌手、流派搜索歌曲")
     @GetMapping("/search")
-    public ApiResponse<?> search(SongSearchRequest request) {
+    public ApiResponse<?> search(@Valid SongSearchRequest request) {
         return ApiResponse.success(songService.search(request));
     }
 
     @Operation(summary = "热门歌曲", description = "获取播放量最高的歌曲列表")
     @GetMapping("/hot")
-    public ApiResponse<List<SongDto>> hot(@RequestParam(defaultValue = "50") int limit) {
+    public ApiResponse<List<SongDto>> hot(@RequestParam(defaultValue = "50") @Min(1) @Max(100) int limit) {
         return ApiResponse.success(songService.getHotSongs(limit));
     }
 
     @Operation(summary = "最新歌曲", description = "获取最新上传的歌曲列表")
     @GetMapping("/new")
-    public ApiResponse<List<SongDto>> newSongs(@RequestParam(defaultValue = "50") int limit) {
+    public ApiResponse<List<SongDto>> newSongs(@RequestParam(defaultValue = "50") @Min(1) @Max(100) int limit) {
         return ApiResponse.success(songService.getNewSongs(limit));
     }
 

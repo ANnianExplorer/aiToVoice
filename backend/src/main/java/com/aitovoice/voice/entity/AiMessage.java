@@ -4,9 +4,13 @@ import com.aitovoice.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "ai_messages")
+@Where(clause = "deleted_at IS NULL")
+@SQLDelete(sql = "UPDATE ai_messages SET deleted_at = NOW() WHERE id = ?")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @SuperBuilder
 public class AiMessage extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)

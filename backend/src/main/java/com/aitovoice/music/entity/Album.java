@@ -4,11 +4,15 @@ import com.aitovoice.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "albums")
+@Where(clause = "deleted_at IS NULL")
+@SQLDelete(sql = "UPDATE albums SET deleted_at = NOW() WHERE id = ?")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @SuperBuilder
 public class Album extends BaseEntity {
     @Column(nullable = false, length = 200)

@@ -46,6 +46,7 @@ public class FollowService {
                 });
     }
 
+    @Transactional(readOnly = true)
     public Map<String, Long> getFollowStats(Long userId) {
         return Map.of(
                 "followers", followRepository.countByFollowingIdAndDeletedAtIsNull(userId),

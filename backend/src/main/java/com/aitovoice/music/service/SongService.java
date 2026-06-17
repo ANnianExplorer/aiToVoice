@@ -42,24 +42,28 @@ public class SongService {
         return songMapper.toDto(song);
     }
 
+    @Transactional(readOnly = true)
     public Page<SongDto> search(SongSearchRequest request) {
         var pageable = PageRequest.of(request.page(), request.size());
         var songs = songRepository.searchByTitle(request.keyword(), pageable);
         return songs.map(songMapper::toDto);
     }
 
+    @Transactional(readOnly = true)
     public List<SongDto> getHotSongs(int limit) {
         return songRepository.findHotSongs(PageRequest.of(0, limit)).stream()
                 .map(songMapper::toDto)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<SongDto> getNewSongs(int limit) {
         return songRepository.findNewSongs(PageRequest.of(0, limit)).stream()
                 .map(songMapper::toDto)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public SongDto getSong(Long id) {
         var song = songRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.SONG_NOT_FOUND));
@@ -108,6 +112,7 @@ public class SongService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<SongDto> getFavorites(Long userId) {
         return userSongRepository.findByUserIdAndType(
                         userId, UserSong.UserSongType.FAVORITE, PageRequest.of(0, 500))
@@ -116,6 +121,7 @@ public class SongService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<SongDto> getHistory(Long userId) {
         return userSongRepository.findByUserIdAndType(
                         userId, UserSong.UserSongType.HISTORY, PageRequest.of(0, 100))

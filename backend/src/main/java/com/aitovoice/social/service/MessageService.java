@@ -7,6 +7,7 @@ import com.aitovoice.social.repository.MessageRepository;
 import com.aitovoice.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class MessageService {
 
     private final MessageRepository messageRepository;
 
+    @Transactional
     public MessageDto send(Long senderId, Long receiverId, SendMessageRequest request) {
         var msg = Message.builder()
                 .sender(User.builder().id(senderId).build())
@@ -28,6 +30,7 @@ public class MessageService {
         return toDto(msg);
     }
 
+    @Transactional(readOnly = true)
     public List<MessageDto> getConversation(Long userId1, Long userId2) {
         return messageRepository.findConversation(userId1, userId2).stream()
                 .map(this::toDto).toList();

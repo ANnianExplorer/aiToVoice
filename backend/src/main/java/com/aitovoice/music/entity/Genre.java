@@ -4,9 +4,13 @@ import com.aitovoice.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "genres")
+@Where(clause = "deleted_at IS NULL")
+@SQLDelete(sql = "UPDATE genres SET deleted_at = NOW() WHERE id = ?")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @SuperBuilder
 public class Genre extends BaseEntity {
     @Column(nullable = false, unique = true, length = 50)
