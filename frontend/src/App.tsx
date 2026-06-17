@@ -1,6 +1,6 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthStore } from './stores/authStore';
+import { Routes, Route } from 'react-router-dom';
 import AppLayout from './components/Layout/AppLayout';
+import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
 import HomePage from './pages/Home/HomePage';
@@ -18,29 +18,26 @@ import UserHomePage from './pages/Social/UserHomePage';
 import MessagePage from './pages/Social/MessagePage';
 
 function App() {
-  const { isAuthenticated } = useAuthStore();
-
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route
-        path="/*"
-        element={isAuthenticated ? <AppLayout /> : <Navigate to="/login" replace />}
-      >
-        <Route index element={<HomePage />} />
-        <Route path="search" element={<SearchPage />} />
-        <Route path="library" element={<LibraryPage />} />
-        <Route path="rankings" element={<RankingsPage />} />
-        <Route path="social" element={<SocialPage />} />
-        <Route path="ai-teacher" element={<AITeacherPage />} />
-        <Route path="studio" element={<StudioPage />} />
-        <Route path="settings" element={<SettingsPage />} />
-        <Route path="profile" element={<ProfilePage />} />
-        <Route path="song/:id" element={<SongDetailPage />} />
-        <Route path="playlist/:id" element={<PlaylistDetailPage />} />
-        <Route path="user/:id" element={<UserHomePage />} />
-        <Route path="messages/:id" element={<MessagePage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/" element={<AppLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="search" element={<SearchPage />} />
+          <Route path="library" element={<LibraryPage />} />
+          <Route path="rankings" element={<RankingsPage />} />
+          <Route path="social" element={<SocialPage />} />
+          <Route path="ai-teacher" element={<AITeacherPage />} />
+          <Route path="studio" element={<StudioPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="song/:id" element={<SongDetailPage />} />
+          <Route path="playlist/:id" element={<PlaylistDetailPage />} />
+          <Route path="user/:id" element={<UserHomePage />} />
+          <Route path="messages/:id" element={<MessagePage />} />
+        </Route>
       </Route>
     </Routes>
   );

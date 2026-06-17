@@ -1,22 +1,5 @@
 import client from './client';
-import type { ApiResponse } from '../types';
-
-interface AiSession {
-  id: number;
-  title: string;
-  sessionType: string;
-  summary: string;
-  createdAt: string;
-}
-
-interface AiMessage {
-  id: number;
-  role: string;
-  content: string;
-  msgType: string;
-  metadata: string;
-  createdAt: string;
-}
+import type { ApiResponse, AiSession, AiMessage } from '../types';
 
 export const createSession = (data: { title?: string; sessionType?: string }) =>
   client.post<ApiResponse<AiSession>>('/ai/sessions', data).then(r => r.data);

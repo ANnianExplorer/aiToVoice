@@ -5,10 +5,13 @@ import { usePlayerStore } from '../stores/playerStore';
 export function useAudio() {
   const howlRef = useRef<Howl | null>(null);
   const animRef = useRef<number>(0);
+  const progressRef = useRef(0);
   const {
     currentSong, isPlaying, volume,
     setProgress, setDuration, playNext,
   } = usePlayerStore();
+
+  const baseUrl = import.meta.env.VITE_FILE_BASE_URL || '';
 
   useEffect(() => {
     if (!currentSong) return;
@@ -18,7 +21,7 @@ export function useAudio() {
     }
 
     const howl = new Howl({
-      src: [`http://localhost:8080/api/files/audio/${currentSong.id}`],
+      src: [`${baseUrl}/api/files/audio/${currentSong.id}`],
       html5: true,
       volume,
       onload: () => setDuration(howl.duration()),
@@ -26,6 +29,7 @@ export function useAudio() {
     });
 
     howlRef.current = howl;
+    progressRef.current = 0;
     setProgress(0);
 
     return () => {
@@ -38,25 +42,37 @@ export function useAudio() {
     howlRef.current?.volume(volume);
   }, [volume]);
 
+  // rAF loop — update ref only (no store writes)
   useEffect(() => {
     if (!howlRef.current) return;
     if (isPlaying) {
       howlRef.current.play();
-      const updateProgress = () => {
+      const tick = () => {
         if (howlRef.current?.playing()) {
-          setProgress(howlRef.current.seek() as number);
-          animRef.current = requestAnimationFrame(updateProgress);
+          progressRef.current = howlRef.current.seek() as number;
+          animRef.current = requestAnimationFrame(tick);
         }
       };
-      animRef.current = requestAnimationFrame(updateProgress);
+      animRef.current = requestAnimationFrame(tick);
     } else {
       howlRef.current.pause();
       cancelAnimationFrame(animRef.current);
     }
   }, [isPlaying]);
 
+  // Sync progress to Zustand store every 500ms
+  useEffect(() => {
+    if (isPlaying) {
+      const interval = setInterval(() => {
+        setProgress(progressRef.current);
+      }, 500);
+      return () => clearInterval(interval);
+    }
+  }, [isPlaying, setProgress]);
+
   const seek = (time: number) => {
     howlRef.current?.seek(time);
+    progressRef.current = time;
     setProgress(time);
   };
 

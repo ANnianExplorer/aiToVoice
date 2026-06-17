@@ -35,6 +35,42 @@ export interface Playlist {
   createdAt: string;
 }
 
+export interface AiSession {
+  id: number;
+  userId: number;
+  sessionType: 'VOICE_COACH' | 'GENERAL';
+  title: string;
+  createdAt: string;
+}
+
+export interface AiMessage {
+  id: number;
+  sessionId: number;
+  role: 'USER' | 'ASSISTANT';
+  content: string;
+  createdAt: string;
+}
+
+export interface VoiceRecord {
+  id: number;
+  userId: number;
+  exerciseId: number;
+  filePath: string;
+  score: number;
+  status: string;
+  createdAt: string;
+}
+
+export interface VoiceExercise {
+  id: number;
+  name: string;
+  type: string;
+  difficulty: number;
+  description: string;
+}
+
+export const API_SUCCESS = 0;
+
 export interface ApiResponse<T> {
   code: number;
   message: string;

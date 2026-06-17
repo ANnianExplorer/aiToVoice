@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Button, Slider, Typography, Space, Image } from 'antd';
 import {
   PlayCircleOutlined, PauseCircleOutlined,
@@ -11,9 +12,19 @@ import { useAudio } from '../../hooks/useAudio';
 export default function PlayerBar() {
   const {
     currentSong, isPlaying, volume, progress, duration, playMode,
-    togglePlay, setVolume, playNext, playPrev, setPlayMode,
+    togglePlay, setVolume, playNext, playPrev, setPlayMode, setProgress,
   } = usePlayerStore();
   const { seek } = useAudio();
+
+  const [isDragging, setIsDragging] = useState(false);
+  const [sliderValue, setSliderValue] = useState(0);
+
+  // Sync slider from store when not dragging
+  useEffect(() => {
+    if (!isDragging) {
+      setSliderValue(progress);
+    }
+  }, [progress, isDragging]);
 
   const formatTime = (sec: number) => {
     const m = Math.floor(sec / 60);
@@ -63,9 +74,20 @@ export default function PlayerBar() {
       </Space>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
         <Typography.Text style={{ color: '#B3B3B3', fontSize: 12, width: 40 }}>
-          {formatTime(progress)}
+          {formatTime(sliderValue)}
         </Typography.Text>
-        <Slider value={progress} max={duration} onChange={seek}
+        <Slider
+          value={sliderValue}
+          max={duration}
+          onChange={(v: number) => {
+            setIsDragging(true);
+            setSliderValue(v);
+          }}
+          onAfterChange={(v: number) => {
+            setIsDragging(false);
+            seek(v);
+            setProgress(v);
+          }}
           styles={{ track: { background: '#1DB954' }, rail: { background: '#404040' } }}
           tooltip={{ formatter: (v) => formatTime(v ?? 0) }} />
         <Typography.Text style={{ color: '#B3B3B3', fontSize: 12, width: 40 }}>

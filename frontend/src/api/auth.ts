@@ -1,19 +1,10 @@
 import client from './client';
-import type { ApiResponse } from '../types';
+import type { ApiResponse, User } from '../types';
 
 interface AuthResponse {
   token: string;
   refreshToken: string;
-  user: {
-    id: number;
-    username: string;
-    email: string;
-    avatarUrl: string;
-    nickname: string;
-    bio: string;
-    role: string;
-    createdAt: string;
-  };
+  user: User;
 }
 
 interface LoginRequest {
@@ -34,4 +25,4 @@ export const register = (data: RegisterRequest) =>
   client.post<ApiResponse<AuthResponse>>('/auth/register', data).then(r => r.data);
 
 export const getMe = () =>
-  client.get<ApiResponse<AuthResponse['user']>>('/auth/me').then(r => r.data);
+  client.get<ApiResponse<User>>('/auth/me').then(r => r.data);

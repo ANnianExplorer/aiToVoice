@@ -18,7 +18,7 @@ export default function AppLayout() {
         <Layout.Header style={{ height: 64, padding: '0 24px', background: '#181818' }}>
           <TopBar />
         </Layout.Header>
-        <Content style={{ overflow: 'auto', padding: 24, background: '#121212' }}>
+        <Content style={{ overflow: 'auto', padding: 24, paddingBottom: 114, background: '#121212' }}>
           <Outlet />
         </Content>
       </Layout>

@@ -26,7 +26,6 @@ export const useAuthStore = create<AuthState>()(
           token: res.data.token,
           isAuthenticated: true,
         });
-        localStorage.setItem('token', res.data.token);
       },
 
       register: async (username, email, password) => {
@@ -36,12 +35,10 @@ export const useAuthStore = create<AuthState>()(
           token: res.data.token,
           isAuthenticated: true,
         });
-        localStorage.setItem('token', res.data.token);
       },
 
       logout: () => {
         set({ user: null, token: null, isAuthenticated: false });
-        localStorage.removeItem('token');
       },
     }),
     { name: 'auth-storage' }
