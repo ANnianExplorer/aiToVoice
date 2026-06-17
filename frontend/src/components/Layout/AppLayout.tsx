@@ -8,8 +8,11 @@ import PlayerBar from '../Player/PlayerBar';
 const { Content } = Layout;
 
 export default function AppLayout() {
+  const isElectron = typeof window !== 'undefined' && window.electronAPI;
+  const titleBarHeight = isElectron ? 32 : 0;
+
   return (
-    <Layout style={{ height: '100vh' }}>
+    <Layout style={{ height: '100vh', paddingTop: titleBarHeight }}>
       <TitleBar />
       <Layout.Sider width={240} style={{ background: '#000000' }}>
         <Sidebar />
