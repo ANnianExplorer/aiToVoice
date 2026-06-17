@@ -1,12 +1,17 @@
-# AiToVoice 架构决策记录（ADR）
+# 架构决策记录（ADR）
 
-> 记录项目关键技术选型的备选方案、决策结果和理由
+> 记录项目中所有重要的架构决策，包括备选方案、决策理由和后续影响。
 
 ---
 
 ## ADR-1: 整体架构方案
 
+**状态**: 已采纳  
 **决策时间**: 2026-06-10
+
+### 背景
+
+需要构建一个桌面音乐播放器 + AI 声乐教练应用，涉及用户认证、音乐播放、语音分析、AI 对话等多个子系统。
 
 ### 备选方案
 
@@ -27,11 +32,22 @@
 - 桌面应用场景下，微服务过重
 - 后期需要时可平滑演进到方案 C 或 B
 
+### 影响
+
+- 后端所有模块部署在同一个 Spring Boot 应用中
+- 模块间通过 Java 方法调用，无需 RPC
+- 数据库使用同一个 MySQL 实例
+
 ---
 
 ## ADR-2: AI 集成方式
 
+**状态**: 已采纳  
 **决策时间**: 2026-06-10
+
+### 背景
+
+AI 音乐老师功能需要分析用户歌声并给出指导，涉及音频分析和自然语言处理。
 
 ### 备选方案
 
@@ -51,10 +67,17 @@
 - 云端使用 OpenAI/Claude API 做发声建议和练习计划（高级指导）
 - 用户无需 API Key 也能使用基础功能
 
+### 影响
+
+- `PitchAnalyzer` 使用 TarsosDSP 库，纯本地计算
+- `AiClient` 通过 HTTP 调用外部 API，需要网络
+- 通过 `ai.provider` 配置切换 OpenAI/Claude
+
 ---
 
 ## ADR-3: 音乐来源
 
+**状态**: 已采纳  
 **决策时间**: 2026-06-10
 
 ### 备选方案
@@ -73,12 +96,13 @@
 
 - 支持用户上传本地音乐文件
 - 接入 NeteaseCloudMusicApi 获取在线音乐
-- source_type 字段区分 LOCAL/NETEASE 来源
+- `source_type` 字段区分 LOCAL/NETEASE 来源
 
 ---
 
 ## ADR-4: UI 设计风格
 
+**状态**: 已采纳  
 **决策时间**: 2026-06-10
 
 ### 备选方案
@@ -103,6 +127,7 @@
 
 ## ADR-5: 数据库选择
 
+**状态**: 已采纳  
 **决策时间**: 2026-06-10
 
 ### 备选方案
@@ -121,17 +146,19 @@
 
 - 用户明确要求使用 MySQL
 - 生态成熟，社区支持丰富
-- 满足当前项目需求
 
 ---
 
 ## ADR-6: 后端模块结构演进
 
+**状态**: 已采纳  
 **决策时间**: 2026-06-12（重构阶段）
 
-### 初始结构
+### 初始结构（10 个模块）
 
-10 个模块：auth, user, music, playlist, social, voice, ai, recommend, ranking, file
+```
+auth, user, music, playlist, social, voice, ai, recommend, ranking, file
+```
 
 ### 问题
 
@@ -140,43 +167,18 @@
 - 薄模块（file 只有 2 个文件，ranking 只有 4 个）
 - voice 和 ai 围绕同一业务域却分开
 
-### 重构后
-
-6 个模块：
+### 重构后（6 个模块）
 
 ```
-com.aitovoice/
-├── common/     # 通用（BaseEntity, ApiResponse, 异常）
-├── config/     # 配置（Security, CORS, Swagger）
-├── auth/       # 认证（JWT, 登录注册）
-├── user/       # 用户 + 设置
-├── music/      # 歌曲 + 歌手 + 专辑 + 流派 + 歌单 + 排行榜 + 推荐 + 文件服务 + 歌词
-├── social/     # 评论 + 私信 + 关注
-└── voice/      # 录音 + 分析 + 练习 + AI 老师
+common, config, auth, user, music, social, voice
 ```
 
-### 理由
+### 合并规则
 
-- 模块数从 10 降到 6，更紧凑
-- 每个模块内按 controller/service/repository/entity/dto 子目录组织
-- 文件数从 109 降到 ~70，维护成本更低
-- voice 和 ai 合并为"声乐训练"统一业务域
-
----
-
-## ADR-7: 最终技术栈
-
-| 层 | 技术 | 选择理由 |
-|---|------|---------|
-| 前端框架 | Electron 28 + React 18 + TypeScript 5 | 桌面应用 + 组件化 + 类型安全 |
-| UI 组件库 | Ant Design 5（暗色主题） | 成熟的 React 组件库，中文生态好 |
-| 状态管理 | Zustand | 轻量，比 Redux 简单 |
-| 音频播放 | Howler.js | 浏览器音频播放标准库 |
-| 后端框架 | Spring Boot 3.2 + Java 17 | 企业级框架，Java 17 现代语法 |
-| ORM | Spring Data JPA + Hibernate | Spring 生态标准 |
-| 数据库 | MySQL 8.0 | 用户要求，生态成熟 |
-| 认证 | Spring Security + JWT | Spring 生态标准，无状态认证 |
-| 音频分析 | TarsosDSP | Java 音频分析库，本地运行 |
-| AI 集成 | OpenAI API / Claude API | 混合模式，可配置切换 |
-| 文档 | Swagger/OpenAPI (springdoc) | 自动生成 API 文档 |
-| 构建 | Maven（后端）+ Vite（前端） | 各自生态标准构建工具 |
+| 原模块 | 合并到 | 理由 |
+|--------|--------|------|
+| playlist | music | 歌单是音乐管理的一部分 |
+| recommend | music | 推荐基于歌曲数据 |
+| ranking | music | 排行榜是歌曲排序展示 |
+| file | music | 文件服务主要给歌曲上传用 |
+| ai | voice | AI 老师是声乐训练的一部分 |

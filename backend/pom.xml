@@ -20,7 +20,7 @@
     <properties>
         <java.version>17</java.version>
         <jjwt.version>0.12.5</jjwt.version>
-        <tarsos.version>2.4.1</tarsos.version>
+        <TarsosDSP.version>2.4.1</TarsosDSP.version>
     </properties>
 
     <dependencies>
@@ -69,7 +69,7 @@
         <dependency>
             <groupId>com.github.st-h</groupId>
             <artifactId>TarsosDSP</artifactId>
-            <version>${tarsos.version}</version>
+            <version>${TarsosDSP.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

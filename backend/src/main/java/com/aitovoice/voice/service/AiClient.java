@@ -2,8 +2,10 @@ package com.aitovoice.voice.service;
 
 import com.aitovoice.common.BusinessException;
 import com.aitovoice.common.ErrorCode;
+import com.aitovoice.config.AiConfig;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +13,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -19,26 +22,18 @@ public class AiClient {
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
+    private final AiConfig aiConfig;
     private final String provider;
-    private final String openaiKey;
-    private final String openaiModel;
-    private final String claudeKey;
-    private final String claudeModel;
 
     public AiClient(
+            @Qualifier("aiHttpClient") HttpClient httpClient,
             ObjectMapper objectMapper,
-            @Value("${ai.provider}") String provider,
-            @Value("${ai.openai.api-key:}") String openaiKey,
-            @Value("${ai.openai.model:}") String openaiModel,
-            @Value("${ai.claude.api-key:}") String claudeKey,
-            @Value("${ai.claude.model:}") String claudeModel) {
+            AiConfig aiConfig,
+            @Value("${ai.provider}") String provider) {
+        this.httpClient = httpClient;
         this.objectMapper = objectMapper;
+        this.aiConfig = aiConfig;
         this.provider = provider;
-        this.openaiKey = openaiKey;
-        this.openaiModel = openaiModel;
-        this.claudeKey = claudeKey;
-        this.claudeModel = claudeModel;
-        this.httpClient = HttpClient.newHttpClient();
     }
 
     public String chat(List<Map<String, String>> messages) {
@@ -53,19 +48,26 @@ public class AiClient {
     private String callOpenAi(List<Map<String, String>> messages) {
         try {
             var body = objectMapper.writeValueAsString(Map.of(
-                    "model", openaiModel,
+                    "model", aiConfig.getOpenaiModel(),
                     "messages", messages,
                     "max_tokens", 1000
             ));
 
             var request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.openai.com/v1/chat/completions"))
-                    .header("Authorization", "Bearer " + openaiKey)
+                    .uri(URI.create(aiConfig.getOpenaiApiUrl()))
+                    .header("Authorization", "Bearer " + aiConfig.getOpenaiApiKey())
                     .header("Content-Type", "application/json")
+                    .timeout(Duration.ofSeconds(60))
                     .POST(HttpRequest.BodyPublishers.ofString(body))
                     .build();
 
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() / 100 != 2) {
+                throw new BusinessException(ErrorCode.AI_SERVICE_ERROR,
+                        "OpenAI 返回错误状态码: " + response.statusCode() + ", body: " + response.body());
+            }
+
             var result = objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
 
             var choices = (List<?>) result.get("choices");
@@ -75,6 +77,8 @@ public class AiClient {
                 return (String) msg.get("content");
             }
             return "AI 暂时无法回复";
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             throw new BusinessException(ErrorCode.AI_SERVICE_ERROR, "OpenAI 调用失败: " + e.getMessage());
         }
@@ -84,20 +88,27 @@ public class AiClient {
     private String callClaude(List<Map<String, String>> messages) {
         try {
             var body = objectMapper.writeValueAsString(Map.of(
-                    "model", claudeModel,
+                    "model", aiConfig.getClaudeModel(),
                     "max_tokens", 1000,
                     "messages", messages
             ));
 
             var request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.anthropic.com/v1/messages"))
-                    .header("x-api-key", claudeKey)
+                    .uri(URI.create(aiConfig.getClaudeApiUrl()))
+                    .header("x-api-key", aiConfig.getClaudeApiKey())
                     .header("anthropic-version", "2023-06-01")
                     .header("Content-Type", "application/json")
+                    .timeout(Duration.ofSeconds(60))
                     .POST(HttpRequest.BodyPublishers.ofString(body))
                     .build();
 
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() / 100 != 2) {
+                throw new BusinessException(ErrorCode.AI_SERVICE_ERROR,
+                        "Claude 返回错误状态码: " + response.statusCode() + ", body: " + response.body());
+            }
+
             var result = objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
 
             var content = (List<?>) result.get("content");
@@ -106,6 +117,8 @@ public class AiClient {
                 return (String) block.get("text");
             }
             return "AI 暂时无法回复";
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             throw new BusinessException(ErrorCode.AI_SERVICE_ERROR, "Claude 调用失败: " + e.getMessage());
         }
