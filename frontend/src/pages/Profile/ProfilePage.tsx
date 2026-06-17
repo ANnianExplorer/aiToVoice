@@ -2,7 +2,7 @@ import { Typography, Avatar, Card, Form, Input, Button, Upload, Space } from 'an
 import { UserOutlined, UploadOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../../stores/authStore';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 export default function ProfilePage() {
   const { user } = useAuthStore();

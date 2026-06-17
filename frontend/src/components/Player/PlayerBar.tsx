@@ -3,7 +3,7 @@ import {
   PlayCircleOutlined, PauseCircleOutlined,
   StepBackwardOutlined, StepForwardOutlined,
   SoundOutlined, ReloadOutlined,
-  ShuffleOutlined, OrderedListOutlined,
+  SwapOutlined, OrderedListOutlined,
 } from '@ant-design/icons';
 import { usePlayerStore } from '../../stores/playerStore';
 import { useAudio } from '../../hooks/useAudio';
@@ -30,7 +30,7 @@ export default function PlayerBar() {
 
   const modeIcon = {
     sequential: <OrderedListOutlined />,
-    shuffle: <ShuffleOutlined />,
+    shuffle: <SwapOutlined />,
     'repeat-one': <ReloadOutlined />,
   }[playMode];
 

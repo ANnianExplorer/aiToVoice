@@ -21,12 +21,12 @@ export default function TitleBar() {
         padding: '0 8px',
         WebkitAppRegion: 'drag',
         zIndex: 9999,
-      }}
+      } as React.CSSProperties}
     >
       <span style={{ color: '#1DB954', fontSize: 12, fontWeight: 600, marginLeft: 8 }}>
         AiToVoice
       </span>
-      <Space size={0} style={{ WebkitAppRegion: 'no-drag' }}>
+      <Space size={0} style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
         <Button
           type="text"
           size="small"

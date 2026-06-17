@@ -7,7 +7,7 @@ export function useAudio() {
   const animRef = useRef<number>(0);
   const {
     currentSong, isPlaying, volume,
-    setProgress, setDuration, togglePlay, playNext,
+    setProgress, setDuration, playNext,
   } = usePlayerStore();
 
   useEffect(() => {
