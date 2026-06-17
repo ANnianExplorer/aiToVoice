@@ -68,21 +68,25 @@ public class SongService {
 
     @Transactional
     public void recordPlay(Long userId, Long songId) {
-        var song = songRepository.findById(songId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.SONG_NOT_FOUND));
-        song.setPlayCount(song.getPlayCount() + 1);
-        songRepository.save(song);
+        if (!songRepository.existsById(songId)) {
+            throw new BusinessException(ErrorCode.SONG_NOT_FOUND);
+        }
+        songRepository.incrementPlayCount(songId);
 
-        var history = userSongRepository.findByUserIdAndSongIdAndType(
-                userId, songId, UserSong.UserSongType.HISTORY)
-                .orElseGet(() -> UserSong.builder()
-                        .user(User.builder().id(userId).build())
-                        .song(song)
-                        .type(UserSong.UserSongType.HISTORY)
-                        .build());
-        history.setPlayCount(history.getPlayCount() + 1);
-        history.setLastPlayedAt(java.time.LocalDateTime.now());
-        userSongRepository.save(history);
+        var existing = userSongRepository.findByUserIdAndSongIdAndType(
+                userId, songId, UserSong.UserSongType.HISTORY);
+        if (existing.isPresent()) {
+            userSongRepository.incrementPlayCount(userId, songId);
+        } else {
+            var history = UserSong.builder()
+                    .user(User.builder().id(userId).build())
+                    .song(Song.builder().id(songId).build())
+                    .type(UserSong.UserSongType.HISTORY)
+                    .playCount(1)
+                    .lastPlayedAt(java.time.LocalDateTime.now())
+                    .build();
+            userSongRepository.save(history);
+        }
     }
 
     @Transactional
@@ -92,6 +96,7 @@ public class SongService {
         if (existing.isPresent()) {
             existing.get().softDelete();
             userSongRepository.save(existing.get());
+            songRepository.decrementLikeCount(songId);
         } else {
             var fav = UserSong.builder()
                     .user(User.builder().id(userId).build())
@@ -99,6 +104,7 @@ public class SongService {
                     .type(UserSong.UserSongType.FAVORITE)
                     .build();
             userSongRepository.save(fav);
+            songRepository.incrementLikeCount(songId);
         }
     }
 

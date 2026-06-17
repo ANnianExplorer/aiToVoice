@@ -86,15 +86,15 @@ class SongServiceTest {
 
     @Test
     void recordPlay_incrementsCount() {
-        when(songRepository.findById(1L)).thenReturn(Optional.of(testSong));
+        when(songRepository.existsById(1L)).thenReturn(true);
         when(userSongRepository.findByUserIdAndSongIdAndType(1L, 1L, UserSong.UserSongType.HISTORY))
                 .thenReturn(Optional.empty());
-        when(songRepository.save(any())).thenReturn(testSong);
+        when(songRepository.incrementPlayCount(1L)).thenReturn(1);
         when(userSongRepository.save(any())).thenReturn(null);
 
         songService.recordPlay(1L, 1L);
 
-        verify(songRepository).save(any(Song.class));
+        verify(songRepository).incrementPlayCount(1L);
         verify(userSongRepository).save(any(UserSong.class));
     }
 }
