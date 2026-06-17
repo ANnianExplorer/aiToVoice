@@ -33,17 +33,20 @@ public class DataInitializer implements CommandLineRunner {
 
         log.info("Seeding demo data...");
 
-        // Genres
-        var genres = genreRepository.saveAll(List.of(
-                genre("Pop", "流行音乐", 1),
-                genre("Rock", "摇滚音乐", 2),
-                genre("Jazz", "爵士音乐", 3),
-                genre("Classical", "古典音乐", 4),
-                genre("R&B", "节奏布鲁斯", 5),
-                genre("Hip-Hop", "嘻哈音乐", 6),
-                genre("Electronic", "电子音乐", 7),
-                genre("Folk", "民谣", 8)
-        ));
+        // Genres — use existing if present
+        var genres = genreRepository.findAll();
+        if (genres.isEmpty()) {
+            genres = genreRepository.saveAll(List.of(
+                    genre("Pop", "流行音乐", 1),
+                    genre("Rock", "摇滚音乐", 2),
+                    genre("Jazz", "爵士音乐", 3),
+                    genre("Classical", "古典音乐", 4),
+                    genre("R&B", "节奏布鲁斯", 5),
+                    genre("Hip-Hop", "嘻哈音乐", 6),
+                    genre("Electronic", "电子音乐", 7),
+                    genre("Folk", "民谣", 8)
+            ));
+        }
 
         // Artists
         var artists = artistRepository.saveAll(List.of(
@@ -57,12 +60,11 @@ public class DataInitializer implements CommandLineRunner {
                 artist("Adele", "British soul and pop vocalist")
         ));
 
-        // Songs
-        var pop = genres.get(0);
-        var rock = genres.get(1);
-        var jazz = genres.get(2);
-        var rnb = genres.get(4);
-        var folk = genres.get(7);
+        // Songs — find genres by name for safety
+        var pop = genres.stream().filter(g -> g.getName().equals("Pop")).findFirst().orElse(genres.get(0));
+        var rock = genres.stream().filter(g -> g.getName().equals("Rock")).findFirst().orElse(genres.get(0));
+        var rnb = genres.stream().filter(g -> g.getName().equals("R&B")).findFirst().orElse(genres.get(0));
+        var folk = genres.stream().filter(g -> g.getName().equals("Folk")).findFirst().orElse(genres.get(0));
 
         songRepository.saveAll(List.of(
                 song("晴天", artists.get(0), pop, 269),
