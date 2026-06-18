@@ -57,62 +57,113 @@ body {
   background: var(--text-tertiary);
 }
 
-/* 主题切换动画 */
-*, *::before, *::after {
-  transition-property: background-color, border-color, color, box-shadow;
-  transition-duration: 0.3s;
-  transition-timing-function: ease;
-}
-
-/* 但不要让所有元素都有动画，只对需要的元素 */
-.no-transition,
-.no-transition *,
-.no-transition *::before,
-.no-transition *::after {
-  transition: none !important;
-}
-
-/* Ant Design 菜单项暗色适配 */
-.ant-menu-item {
+/* ===== 暗色主题 Ant Design 覆盖 ===== */
+[data-theme="dark"] .ant-menu-item {
   color: var(--text-secondary) !important;
 }
 
-.ant-menu-item-selected {
+[data-theme="dark"] .ant-menu-item-selected {
   color: var(--text-primary) !important;
   background: var(--bg-hover) !important;
 }
 
-.ant-menu-item:hover {
+[data-theme="dark"] .ant-menu-item:hover {
   color: var(--text-primary) !important;
   background: var(--bg-hover) !important;
 }
 
-/* Ant Design Tabs 适配 */
-.ant-tabs-tab {
+[data-theme="dark"] .ant-tabs-tab {
   color: var(--text-secondary) !important;
 }
 
-.ant-tabs-tab-active .ant-tabs-tab-btn {
+[data-theme="dark"] .ant-tabs-tab-active .ant-tabs-tab-btn {
   color: var(--text-primary) !important;
 }
 
-/* Ant Design Card 适配 */
-.ant-card {
+[data-theme="dark"] .ant-card {
   background: var(--bg-card) !important;
   border-color: var(--border) !important;
 }
 
-.ant-card-head {
+[data-theme="dark"] .ant-card-head {
   color: var(--text-primary) !important;
   border-bottom-color: var(--border) !important;
 }
 
-/* 亮色主题特殊处理 */
+/* ===== 亮色主题 Ant Design 覆盖 ===== */
 [data-theme="light"] .ant-menu-item {
   color: var(--text-secondary) !important;
 }
 
 [data-theme="light"] .ant-menu-item-selected {
   color: var(--accent) !important;
-  background: var(--bg-hover) !important;
+}
+
+[data-theme="light"] .ant-card {
+  background: var(--bg-card) !important;
+  border-color: var(--border) !important;
+}
+
+[data-theme="light"] .ant-input {
+  background: var(--bg-elevated) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .ant-input-affix-wrapper {
+  background: var(--bg-elevated) !important;
+  border-color: var(--border) !important;
+}
+
+/* 隐藏滚动条 */
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===== 亮色主题 Slider 覆盖 ===== */
+[data-theme="light"] .ant-slider-rail {
+  background: var(--border) !important;
+}
+
+[data-theme="light"] .ant-slider-track {
+  background: var(--accent) !important;
+}
+
+[data-theme="light"] .ant-slider-handle::after {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px var(--accent-bg) !important;
+}
+
+/* ===== 亮色主题 Select 下拉 ===== */
+[data-theme="light"] .ant-select-selector {
+  background: var(--bg-elevated) !important;
+  border-color: var(--border) !important;
+}
+
+[data-theme="light"] .ant-select-dropdown {
+  background: var(--bg-card) !important;
+}
+
+/* ===== 亮色主题 Tabs ===== */
+[data-theme="light"] .ant-tabs-ink-bar {
+  background: var(--accent) !important;
+}
+
+[data-theme="light"] .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--accent) !important;
+}
+
+/* ===== 亮色主题 List ===== */
+[data-theme="light"] .ant-list-item {
+  background: var(--bg-card) !important;
+  border-color: var(--border) !important;
+}
+
+/* ===== 亮色主题 Tag ===== */
+[data-theme="light"] .ant-tag {
+  border-color: var(--border) !important;
 }
