@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Button, Slider, Typography, Space, Image } from 'antd';
+
+const { Text } = Typography;
 import {
   PlayCircleOutlined, PauseCircleOutlined,
   StepBackwardOutlined, StepForwardOutlined,
   SoundOutlined, ReloadOutlined,
   SwapOutlined, OrderedListOutlined,
-  FileTextOutlined,
+  FileTextOutlined, ExpandOutlined,
 } from '@ant-design/icons';
 import { usePlayerStore } from '../../stores/playerStore';
 import { useAudio } from '../../hooks/useAudio';
 import { useTheme } from '../../theme/ThemeProvider';
 import LyricsDrawer from '../Lyrics/LyricsDrawer';
+import FullScreenPlayer from './FullScreenPlayer';
 
 export default function PlayerBar() {
   const {
@@ -18,16 +21,15 @@ export default function PlayerBar() {
     togglePlay, setVolume, playNext, playPrev, setPlayMode, setProgress,
   } = usePlayerStore();
   const { seek } = useAudio();
-  const { tokens } = useTheme();
+  const { tokens, mode } = useTheme();
 
   const [isDragging, setIsDragging] = useState(false);
   const [sliderValue, setSliderValue] = useState(0);
   const [lyricsOpen, setLyricsOpen] = useState(false);
+  const [fullScreen, setFullScreen] = useState(false);
 
   useEffect(() => {
-    if (!isDragging) {
-      setSliderValue(progress);
-    }
+    if (!isDragging) setSliderValue(progress);
   }, [progress, isDragging]);
 
   const formatTime = (sec: number) => {
@@ -37,10 +39,8 @@ export default function PlayerBar() {
   };
 
   const cycleMode = () => {
-    const modes: Array<'sequential' | 'shuffle' | 'repeat-one'> =
-      ['sequential', 'shuffle', 'repeat-one'];
-    const idx = modes.indexOf(playMode);
-    setPlayMode(modes[(idx + 1) % modes.length]);
+    const modes: Array<'sequential' | 'shuffle' | 'repeat-one'> = ['sequential', 'shuffle', 'repeat-one'];
+    setPlayMode(modes[(modes.indexOf(playMode) + 1) % modes.length]);
   };
 
   const modeIcon = {
@@ -56,35 +56,47 @@ export default function PlayerBar() {
 
   if (!currentSong) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '0 16px' }}>
-        <Typography.Text style={{ color: tokens.textTertiary }}>
-          选择一首歌曲开始播放
-        </Typography.Text>
+      <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '0 24px' }}>
+        <Text style={{ color: tokens.textTertiary, fontSize: 15 }}>
+          ♪ 选择一首歌曲开始播放
+        </Text>
       </div>
     );
   }
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '0 16px', gap: 16 }}>
-        {/* 歌曲信息 */}
-        <Image
-          src={currentSong.coverUrl}
-          width={56} height={56}
-          style={{ borderRadius: tokens.borderRadius }}
-          fallback="data:image/png;base64,iVBORw0KGgo=" preview={false}
-        />
-        <div style={{ width: 160 }}>
-          <Typography.Text strong style={{ color: tokens.textPrimary, display: 'block' }} ellipsis>
-            {currentSong.title}
-          </Typography.Text>
-          <Typography.Text style={{ color: tokens.textSecondary, fontSize: 12 }} ellipsis>
-            {currentSong.artistName}
-          </Typography.Text>
+      <div style={{
+        display: 'flex', alignItems: 'center', height: '100%',
+        padding: '0 16px', gap: 16,
+      }}>
+        {/* 歌曲信息 — 可点击展开全屏 */}
+        <div
+          style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', minWidth: 0 }}
+          onClick={() => setFullScreen(true)}
+        >
+          <Image
+            src={currentSong.coverUrl}
+            width={52} height={52}
+            style={{
+              borderRadius: mode === 'light' ? tokens.borderRadius : 4,
+              flexShrink: 0,
+            }}
+            fallback="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='52'%3E%3Crect fill='%23282828' width='52' height='52' rx='4'/%3E%3Ccircle cx='26' cy='26' r='10' fill='%231DB954'/%3E%3C/svg%3E"
+            preview={false}
+          />
+          <div style={{ minWidth: 0, maxWidth: 160 }}>
+            <Text strong style={{ color: tokens.textPrimary, display: 'block', fontSize: 14 }} ellipsis>
+              {currentSong.title}
+            </Text>
+            <Text style={{ color: tokens.textSecondary, fontSize: 12, display: 'block' }} ellipsis>
+              {currentSong.artistName}
+            </Text>
+          </div>
         </div>
 
         {/* 播放控制 */}
-        <Space>
+        <Space size={4}>
           <Button type="text" icon={modeIcon} onClick={cycleMode}
             style={{ color: tokens.textSecondary }} />
           <Button type="text" icon={<StepBackwardOutlined />} onClick={playPrev}
@@ -98,45 +110,41 @@ export default function PlayerBar() {
         </Space>
 
         {/* 进度条 */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Typography.Text style={{ color: tokens.textSecondary, fontSize: 12, width: 40 }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+          <Text style={{ color: tokens.textTertiary, fontSize: 12, width: 36, textAlign: 'right', flexShrink: 0 }}>
             {formatTime(sliderValue)}
-          </Typography.Text>
+          </Text>
           <Slider
             value={sliderValue}
-            max={duration}
-            onChange={(v: number) => {
-              setIsDragging(true);
-              setSliderValue(v);
+            max={duration || 1}
+            onChange={(v: number) => { setIsDragging(true); setSliderValue(v); }}
+            onAfterChange={(v: number) => { setIsDragging(false); seek(v); setProgress(v); }}
+            styles={{
+              track: { background: tokens.accent },
+              rail: { background: tokens.border },
             }}
-            onAfterChange={(v: number) => {
-              setIsDragging(false);
-              seek(v);
-              setProgress(v);
-            }}
-            styles={{ track: { background: tokens.accent }, rail: { background: tokens.border } }}
             tooltip={{ formatter: (v) => formatTime(v ?? 0) }}
           />
-          <Typography.Text style={{ color: tokens.textSecondary, fontSize: 12, width: 40 }}>
+          <Text style={{ color: tokens.textTertiary, fontSize: 12, width: 36, flexShrink: 0 }}>
             {formatTime(duration)}
-          </Typography.Text>
+          </Text>
         </div>
 
-        {/* 音量 + 歌词 */}
-        <Space>
+        {/* 右侧按钮 */}
+        <Space size={4}>
           <SoundOutlined style={{ color: tokens.textSecondary }} />
-          <Slider
-            value={volume} max={1} step={0.01} onChange={setVolume}
-            style={{ width: 100 }}
+          <Slider value={volume} max={1} step={0.01} onChange={setVolume}
+            style={{ width: 80 }}
             styles={{ track: { background: tokens.accent }, rail: { background: tokens.border } }}
           />
-          <Button
-            type="text"
-            icon={<FileTextOutlined />}
+          <Button type="text" icon={<FileTextOutlined />}
             onClick={() => setLyricsOpen(!lyricsOpen)}
             style={{ color: lyricsOpen ? tokens.accent : tokens.textSecondary }}
-            title="歌词"
-          />
+            title="歌词" />
+          <Button type="text" icon={<ExpandOutlined />}
+            onClick={() => setFullScreen(true)}
+            style={{ color: tokens.textSecondary }}
+            title="全屏" />
         </Space>
       </div>
 
@@ -144,6 +152,11 @@ export default function PlayerBar() {
         open={lyricsOpen}
         onClose={() => setLyricsOpen(false)}
         onSeek={handleLyricsSeek}
+      />
+
+      <FullScreenPlayer
+        open={fullScreen}
+        onClose={() => setFullScreen(false)}
       />
     </>
   );
