@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Button, Slider, Typography, Space } from 'antd';
 import {
   PlayCircleOutlined, PauseCircleOutlined,
@@ -56,155 +57,162 @@ export default function FullScreenPlayer({ open, onClose }: FullScreenPlayerProp
 
   const coverUrl = currentSong.coverUrl || '';
 
-  return (
+  return createPortal(
     <div
       style={{
         position: 'fixed',
         top: 0, left: 0, right: 0, bottom: 0,
-        zIndex: 9999,
-        background: `linear-gradient(135deg, ${tokens.bgPrimary}, ${tokens.bgSecondary})`,
+        zIndex: 99999,
+        background: tokens.bgPrimary,
         display: 'flex',
         flexDirection: 'column',
+        animation: 'fadeInUp 0.3s ease-out',
       }}
     >
-      {/* 入场动画覆盖层 */}
+      {/* 内联样式定义动画（确保不被 CSS 覆盖） */}
       <style>{`
-        .fs-player-enter { animation: fadeInUp 0.3s ease-out; }
-        .fs-cover-spin { animation: spin 20s linear infinite; }
-        .fs-cover-spin-paused { animation: spin 20s linear infinite; animation-play-state: paused; }
+        @keyframes fsSpin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes fsFadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .fs-cover-spinning { animation: fsSpin 20s linear infinite; }
+        .fs-cover-paused { animation: fsSpin 20s linear infinite; animation-play-state: paused; }
       `}</style>
 
-      <div className="fs-player-enter" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        {/* 顶部栏 */}
+      {/* 顶部栏 */}
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '16px 24px', flexShrink: 0,
+      }}>
+        <Button type="text" icon={<CloseOutlined />}
+          onClick={onClose}
+          style={{ color: tokens.textSecondary, fontSize: 20 }} />
+        <Text style={{ color: tokens.textSecondary, fontSize: 13 }}>
+          {currentSong.sourceType === 'AUDIUS' ? 'Audius' : currentSong.sourceType === 'JAMENDO' ? 'Jamendo' : '本地'}
+        </Text>
+        <Button type="text" icon={<FileTextOutlined />}
+          onClick={() => setShowLyrics(!showLyrics)}
+          style={{ color: showLyrics ? tokens.accent : tokens.textSecondary, fontSize: 20 }} />
+      </div>
+
+      {/* 主体区域 */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        {/* 左侧：封面 + 歌曲信息 */}
         <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          padding: '16px 24px',
+          flex: showLyrics ? '0 0 40%' : '1',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          justifyContent: 'center', padding: 24,
+          transition: 'flex 0.3s ease',
         }}>
-          <Button type="text" icon={<CloseOutlined />}
-            onClick={onClose}
-            style={{ color: tokens.textSecondary, fontSize: 20 }} />
-          <Text style={{ color: tokens.textSecondary, fontSize: 13 }}>
-            {currentSong.sourceType === 'AUDIUS' ? 'Audius' : currentSong.sourceType === 'JAMENDO' ? 'Jamendo' : '本地'}
-          </Text>
-          <Button type="text" icon={<FileTextOutlined />}
-            onClick={() => setShowLyrics(!showLyrics)}
-            style={{ color: showLyrics ? tokens.accent : tokens.textSecondary, fontSize: 20 }} />
-        </div>
-
-        {/* 主体区域 */}
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-          {/* 左侧：封面 + 歌曲信息 */}
+          {/* 封面旋转 */}
           <div style={{
-            flex: showLyrics ? '0 0 40%' : '1',
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center', padding: 24,
-            transition: 'flex 0.3s ease',
+            width: 280, height: 280, borderRadius: '50%', overflow: 'hidden',
+            boxShadow: isPlaying
+              ? `0 0 40px ${tokens.accent}40, 0 0 80px ${tokens.accent}20`
+              : tokens.shadowElevated,
+            transition: 'box-shadow 0.5s ease',
           }}>
-            {/* 封面旋转 — 用原生 img 替代 Ant Design Image */}
-            <div style={{
-              width: 280, height: 280, borderRadius: '50%', overflow: 'hidden',
-              boxShadow: isPlaying
-                ? `0 0 40px ${tokens.accent}40, 0 0 80px ${tokens.accent}20`
-                : tokens.shadowElevated,
-              transition: 'box-shadow 0.5s ease',
-            }}>
-              <img
-                src={coverUrl}
-                alt={currentSong.title}
-                className={isPlaying ? 'fs-cover-spin' : 'fs-cover-spin-paused'}
-                style={{
-                  width: 280,
-                  height: 280,
-                  objectFit: 'cover',
-                  borderRadius: '50%',
-                  display: 'block',
-                }}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Crect fill='%23282828' width='280' height='280'/%3E%3Ccircle cx='140' cy='140' r='40' fill='%231DB954'/%3E%3C/svg%3E";
-                }}
-              />
-            </div>
-
-            {/* 歌曲信息 */}
-            <div style={{ textAlign: 'center', marginTop: 32, maxWidth: 320 }}>
-              <Text style={{
-                color: tokens.textPrimary, fontSize: 22, fontWeight: 700,
-                display: 'block', marginBottom: 8,
-              }} ellipsis>
-                {currentSong.title}
-              </Text>
-              <Text style={{ color: tokens.textSecondary, fontSize: 16 }} ellipsis>
-                {currentSong.artistName}
-              </Text>
-            </div>
+            <img
+              src={coverUrl}
+              alt={currentSong.title}
+              className={isPlaying ? 'fs-cover-spinning' : 'fs-cover-paused'}
+              style={{
+                width: 280,
+                height: 280,
+                objectFit: 'cover',
+                borderRadius: '50%',
+                display: 'block',
+              }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Crect fill='%23282828' width='280' height='280'/%3E%3Ccircle cx='140' cy='140' r='40' fill='%231DB954'/%3E%3C/svg%3E";
+              }}
+            />
           </div>
 
-          {/* 右侧：歌词 */}
-          {showLyrics && (
-            <div style={{
-              flex: '1', overflow: 'hidden',
-              borderLeft: `1px solid ${tokens.border}`,
-            }}>
-              <SyncedLyrics
-                songId={currentSong.id}
-                currentTime={progress}
-                onSeek={(t) => { seek(t); setProgress(t); }}
-              />
-            </div>
-          )}
+          {/* 歌曲信息 */}
+          <div style={{ textAlign: 'center', marginTop: 32, maxWidth: 320 }}>
+            <Text style={{
+              color: tokens.textPrimary, fontSize: 22, fontWeight: 700,
+              display: 'block', marginBottom: 8,
+            }} ellipsis>
+              {currentSong.title}
+            </Text>
+            <Text style={{ color: tokens.textSecondary, fontSize: 16 }} ellipsis>
+              {currentSong.artistName}
+            </Text>
+          </div>
         </div>
 
-        {/* 底部控制区 */}
-        <div style={{ padding: '0 48px 40px', maxWidth: 700, margin: '0 auto', width: '100%' }}>
-          {/* 进度条 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-            <Text style={{ color: tokens.textTertiary, fontSize: 12, width: 40, textAlign: 'right' }}>
-              {formatTime(sliderValue)}
-            </Text>
-            <Slider
-              value={sliderValue}
-              max={duration || 1}
-              onChange={(v: number) => { setIsDragging(true); setSliderValue(v); }}
-              onAfterChange={(v: number) => { setIsDragging(false); seek(v); setProgress(v); }}
-              styles={{
-                track: { background: tokens.accent },
-                rail: { background: tokens.border },
-                handle: { borderColor: tokens.accent, background: tokens.accent },
-              }}
-              tooltip={{ formatter: null }}
+        {/* 右侧：歌词 */}
+        {showLyrics && (
+          <div style={{
+            flex: '1', overflow: 'hidden',
+            borderLeft: `1px solid ${tokens.border}`,
+          }}>
+            <SyncedLyrics
+              songId={currentSong.id}
+              currentTime={progress}
+              onSeek={(t) => { seek(t); setProgress(t); }}
             />
-            <Text style={{ color: tokens.textTertiary, fontSize: 12, width: 40 }}>
-              {formatTime(duration)}
-            </Text>
           </div>
+        )}
+      </div>
 
-          {/* 控制按钮 */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 24 }}>
-            <Button type="text" icon={modeIcon} onClick={cycleMode}
-              style={{ color: tokens.textSecondary, fontSize: 18 }} />
-            <Button type="text" icon={<StepBackwardOutlined />} onClick={playPrev}
-              style={{ color: tokens.textPrimary, fontSize: 24 }} />
-            <Button
-              type="text"
-              icon={isPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
-              onClick={togglePlay}
-              style={{
-                color: tokens.accent, fontSize: 52,
-                filter: isPlaying ? `drop-shadow(0 0 12px ${tokens.accent})` : 'none',
-              }}
+      {/* 底部控制区 */}
+      <div style={{ padding: '0 48px 40px', maxWidth: 700, margin: '0 auto', width: '100%', flexShrink: 0 }}>
+        {/* 进度条 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+          <Text style={{ color: tokens.textTertiary, fontSize: 12, width: 40, textAlign: 'right' }}>
+            {formatTime(sliderValue)}
+          </Text>
+          <Slider
+            value={sliderValue}
+            max={duration || 1}
+            onChange={(v: number) => { setIsDragging(true); setSliderValue(v); }}
+            onAfterChange={(v: number) => { setIsDragging(false); seek(v); setProgress(v); }}
+            styles={{
+              track: { background: tokens.accent },
+              rail: { background: tokens.border },
+              handle: { borderColor: tokens.accent, background: tokens.accent },
+            }}
+            tooltip={{ formatter: null }}
+          />
+          <Text style={{ color: tokens.textTertiary, fontSize: 12, width: 40 }}>
+            {formatTime(duration)}
+          </Text>
+        </div>
+
+        {/* 控制按钮 */}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 24 }}>
+          <Button type="text" icon={modeIcon} onClick={cycleMode}
+            style={{ color: tokens.textSecondary, fontSize: 18 }} />
+          <Button type="text" icon={<StepBackwardOutlined />} onClick={playPrev}
+            style={{ color: tokens.textPrimary, fontSize: 24 }} />
+          <Button
+            type="text"
+            icon={isPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+            onClick={togglePlay}
+            style={{
+              color: tokens.accent, fontSize: 52,
+              filter: isPlaying ? `drop-shadow(0 0 12px ${tokens.accent})` : 'none',
+            }}
+          />
+          <Button type="text" icon={<StepForwardOutlined />} onClick={playNext}
+            style={{ color: tokens.textPrimary, fontSize: 24 }} />
+          <Space size={8}>
+            <SoundOutlined style={{ color: tokens.textSecondary }} />
+            <Slider value={volume} max={1} step={0.01} onChange={setVolume}
+              style={{ width: 80 }}
+              styles={{ track: { background: tokens.accent }, rail: { background: tokens.border } }}
             />
-            <Button type="text" icon={<StepForwardOutlined />} onClick={playNext}
-              style={{ color: tokens.textPrimary, fontSize: 24 }} />
-            <Space size={8}>
-              <SoundOutlined style={{ color: tokens.textSecondary }} />
-              <Slider value={volume} max={1} step={0.01} onChange={setVolume}
-                style={{ width: 80 }}
-                styles={{ track: { background: tokens.accent }, rail: { background: tokens.border } }}
-              />
-            </Space>
-          </div>
+          </Space>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
