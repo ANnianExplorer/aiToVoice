@@ -21,15 +21,15 @@ export function useAudio() {
     }
 
     // Determine audio source:
-    // 1. External songs: use streamUrl directly
-    // 2. Local songs: use filePath (e.g. "audio/uuid.mp3") → /api/files/audio/audio/uuid.mp3
+    // 1. Song with streamUrl (Audius/Jamendo from DB) → direct stream
+    // 2. Local song with filePath → /api/files/audio/{filePath}
+    // 3. Fallback → /api/files/audio/{id}
     let src: string;
-    if ((currentSong as any).streamUrl) {
-      src = (currentSong as any).streamUrl;
+    if (currentSong.streamUrl) {
+      src = currentSong.streamUrl;
     } else if (currentSong.filePath) {
       src = `${baseUrl}/api/files/audio/${currentSong.filePath}`;
     } else {
-      // Fallback: try song ID (legacy behavior)
       src = `${baseUrl}/api/files/audio/${currentSong.id}`;
     }
 
@@ -39,13 +39,15 @@ export function useAudio() {
       volume,
       onload: () => setDuration(howl.duration()),
       onend: () => playNext(),
+      onloaderror: (_id, err) => {
+        console.error('Audio load error:', err, 'src:', src);
+      },
     });
 
     howlRef.current = howl;
     progressRef.current = 0;
     setProgress(0);
 
-    // Auto-play when a new song is set
     if (isPlaying) {
       howl.play();
     }
@@ -54,13 +56,12 @@ export function useAudio() {
       howl.unload();
       cancelAnimationFrame(animRef.current);
     };
-  }, [currentSong?.id, (currentSong as any)?.streamUrl, currentSong?.filePath]);
+  }, [currentSong?.id, currentSong?.streamUrl, currentSong?.filePath]);
 
   useEffect(() => {
     howlRef.current?.volume(volume);
   }, [volume]);
 
-  // rAF loop — update ref only (no store writes)
   useEffect(() => {
     if (!howlRef.current) return;
     if (isPlaying) {
@@ -78,7 +79,6 @@ export function useAudio() {
     }
   }, [isPlaying]);
 
-  // Sync progress to Zustand store every 500ms
   useEffect(() => {
     if (isPlaying) {
       const interval = setInterval(() => {

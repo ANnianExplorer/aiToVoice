@@ -36,19 +36,27 @@ public class DiscoverController {
     public ApiResponse<Map<String, Object>> discover() {
         var data = new LinkedHashMap<String, Object>();
 
-        // 1. 热门歌曲（按播放量）
+        // 1. 在线歌曲（Audius/Jamendo）— 有 streamUrl，可播放
+        var onlineSongs = songRepository.findAll(PageRequest.of(0, 50))
+                .stream()
+                .filter(s -> s.getSourceType() != com.aitovoice.music.entity.Song.SourceType.LOCAL)
+                .map(songMapper::toDto)
+                .toList();
+        data.put("onlineSongs", onlineSongs);
+
+        // 2. 本地热门歌曲
         var hot = songRepository.findHotSongs(PageRequest.of(0, 12))
                 .stream().map(songMapper::toDto).toList();
         data.put("hotSongs", hot);
 
-        // 2. 新歌速递
+        // 3. 新歌速递
         var newSongs = songRepository.findNewSongs(PageRequest.of(0, 12))
                 .stream().map(songMapper::toDto).toList();
         data.put("newSongs", newSongs);
 
-        // 3. 热门歌手
+        // 4. 热门歌手（去重）
         var artists = artistRepository.findAll().stream()
-                .limit(12)
+                .limit(20)
                 .map(a -> {
                     var m = new java.util.LinkedHashMap<String, Object>();
                     m.put("id", a.getId());
@@ -58,22 +66,11 @@ public class DiscoverController {
                 .toList();
         data.put("artists", artists);
 
-        // 4. 流派列表
+        // 5. 流派列表
         var genres = genreRepository.findAllByOrderBySortOrderAsc().stream()
                 .map(g -> Map.<String, Object>of("id", g.getId(), "name", g.getName()))
                 .toList();
         data.put("genres", genres);
-
-        // 5. 各流派热门（每个流派前 6 首）
-        var genreHot = new LinkedHashMap<String, List<SongDto>>();
-        for (var genre : genreRepository.findAllByOrderBySortOrderAsc()) {
-            var songs = songRepository.findByGenreId(genre.getId(), PageRequest.of(0, 6))
-                    .stream().map(songMapper::toDto).toList();
-            if (!songs.isEmpty()) {
-                genreHot.put(genre.getName(), songs);
-            }
-        }
-        data.put("genreHot", genreHot);
 
         return ApiResponse.success(data);
     }
