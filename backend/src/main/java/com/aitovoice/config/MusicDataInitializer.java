@@ -8,6 +8,7 @@ import com.aitovoice.music.repository.GenreRepository;
 import com.aitovoice.music.repository.SongRepository;
 import com.aitovoice.music.source.AudiusProvider;
 import com.aitovoice.music.source.ExternalTrack;
+import com.aitovoice.music.source.MusicSourceProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -21,11 +22,10 @@ import java.util.Map;
 
 /**
  * 应用启动时从 Audius 拉取热门歌曲存入本地数据库
- * 确保即使 Audius 不可用，本地也有数据
  */
 @Slf4j
 @Component
-@Order(2) // 在 DataInitializer 之后运行
+@Order(3) // EnumColumnFixer(1) 之后运行
 @RequiredArgsConstructor
 public class MusicDataInitializer implements ApplicationRunner {
 
@@ -34,15 +34,16 @@ public class MusicDataInitializer implements ApplicationRunner {
     private final ArtistRepository artistRepository;
     private final GenreRepository genreRepository;
 
+    // 缓存已创建的艺术家，避免重复查询
+    private final Map<String, Artist> artistCache = new HashMap<>();
+    private final Map<String, Genre> genreCache = new HashMap<>();
+
     @Override
-    @Transactional
     public void run(ApplicationArguments args) {
-        // 同步 Audius
         syncProvider(audiusProvider, Song.SourceType.AUDIUS, 50);
     }
 
-    private void syncProvider(com.aitovoice.music.source.MusicSourceProvider provider,
-                              Song.SourceType sourceType, int limit) {
+    private void syncProvider(MusicSourceProvider provider, Song.SourceType sourceType, int limit) {
         long count = songRepository.countBySourceType(sourceType);
         if (count >= 20) {
             log.info("已有 {} 首 {} 歌曲，跳过同步", count, sourceType);
@@ -57,9 +58,13 @@ public class MusicDataInitializer implements ApplicationRunner {
             var tracks = provider.getTrending(limit);
             int saved = 0;
             for (var track : tracks) {
-                if (existsBySourceId(track.sourceId())) continue;
-                saveTrack(track);
-                saved++;
+                try {
+                    if (existsBySourceId(track.sourceId())) continue;
+                    saveTrack(track);
+                    saved++;
+                } catch (Exception e) {
+                    log.debug("跳过单曲 {}: {}", track.title(), e.getMessage());
+                }
             }
             log.info("{} 同步完成：新增 {} 首歌曲", sourceType, saved);
         } catch (Exception e) {
@@ -67,15 +72,9 @@ public class MusicDataInitializer implements ApplicationRunner {
         }
     }
 
-    private boolean existsBySourceId(String sourceId) {
-        return songRepository.findBySourceIdAndSourceType(sourceId, Song.SourceType.AUDIUS).isPresent();
-    }
-
-    private void saveTrack(ExternalTrack track) {
-        // 查找或创建艺术家
+    @Transactional
+    public void saveTrack(ExternalTrack track) {
         var artist = findOrCreateArtist(track.artistName());
-
-        // 查找或创建流派
         var genre = findOrCreateGenre(track.genre());
 
         var song = Song.builder()
@@ -93,25 +92,35 @@ public class MusicDataInitializer implements ApplicationRunner {
     }
 
     private Artist findOrCreateArtist(String name) {
-        return artistRepository.findByName(name).orElseGet(() -> {
+        if (artistCache.containsKey(name)) return artistCache.get(name);
+        var artist = artistRepository.findByName(name).orElseGet(() -> {
             var a = Artist.builder()
                     .name(name)
                     .sourceType(Artist.SourceType.AUDIUS)
                     .build();
             return artistRepository.save(a);
         });
+        artistCache.put(name, artist);
+        return artist;
     }
 
     private Genre findOrCreateGenre(String genreName) {
         if (genreName == null || genreName.isBlank()) {
             return genreRepository.findAll().stream().findFirst().orElse(null);
         }
-        return genreRepository.findByName(genreName).orElseGet(() -> {
+        if (genreCache.containsKey(genreName)) return genreCache.get(genreName);
+        var genre = genreRepository.findByName(genreName).orElseGet(() -> {
             var g = new Genre();
             g.setName(genreName);
             g.setDescription(genreName + " music");
             g.setSortOrder(99);
             return genreRepository.save(g);
         });
+        genreCache.put(genreName, genre);
+        return genre;
+    }
+
+    private boolean existsBySourceId(String sourceId) {
+        return songRepository.findBySourceIdAndSourceType(sourceId, Song.SourceType.AUDIUS).isPresent();
     }
 }
