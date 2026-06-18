@@ -6,7 +6,6 @@ import com.aitovoice.music.mapper.SongMapper;
 import com.aitovoice.music.repository.ArtistRepository;
 import com.aitovoice.music.repository.GenreRepository;
 import com.aitovoice.music.repository.SongRepository;
-import com.aitovoice.music.source.MusicSourceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +27,6 @@ public class DiscoverController {
     private final SongRepository songRepository;
     private final ArtistRepository artistRepository;
     private final GenreRepository genreRepository;
-    private final MusicSourceService musicSourceService;
     private final SongMapper songMapper;
 
     /** 发现页全部数据 */
@@ -37,11 +35,8 @@ public class DiscoverController {
         var data = new LinkedHashMap<String, Object>();
 
         // 1. 在线歌曲（Audius/Jamendo）— 有 streamUrl，可播放
-        var onlineSongs = songRepository.findAll(PageRequest.of(0, 50))
-                .stream()
-                .filter(s -> s.getSourceType() != com.aitovoice.music.entity.Song.SourceType.LOCAL)
-                .map(songMapper::toDto)
-                .toList();
+        var onlineSongs = songRepository.findOnlineSongs(PageRequest.of(0, 50))
+                .stream().map(songMapper::toDto).toList();
         data.put("onlineSongs", onlineSongs);
 
         // 2. 本地热门歌曲

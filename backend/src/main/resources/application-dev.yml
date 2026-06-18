@@ -14,7 +14,7 @@ cors:
 
 music:
   jamendo:
-    client-id: ${JAMENDO_CLIENT_ID:}
+    client-id: ${JAMENDO_CLIENT_ID:241d7fee}
 
 logging:
   level:

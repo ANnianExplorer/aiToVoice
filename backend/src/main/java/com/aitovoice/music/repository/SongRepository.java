@@ -26,6 +26,9 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     @Query("SELECT s FROM Song s LEFT JOIN FETCH s.artist LEFT JOIN FETCH s.album LEFT JOIN FETCH s.genre WHERE s.deletedAt IS NULL ORDER BY s.playCount DESC")
     List<Song> findHotSongs(Pageable pageable);
 
+    @Query("SELECT s FROM Song s LEFT JOIN FETCH s.artist LEFT JOIN FETCH s.album LEFT JOIN FETCH s.genre WHERE s.deletedAt IS NULL AND s.sourceType != 'LOCAL' ORDER BY s.playCount DESC")
+    List<Song> findOnlineSongs(Pageable pageable);
+
     @Query("SELECT s FROM Song s LEFT JOIN FETCH s.artist LEFT JOIN FETCH s.album LEFT JOIN FETCH s.genre WHERE s.deletedAt IS NULL ORDER BY s.createdAt DESC")
     List<Song> findNewSongs(Pageable pageable);
 
