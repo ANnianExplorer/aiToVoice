@@ -18,6 +18,10 @@ export interface Song {
   duration: number;
   coverUrl: string;
   sourceType: 'LOCAL' | 'NETEASE' | 'AUDIUS' | 'JAMENDO';
+  /** 外部音乐源的流式播放 URL（仅非 LOCAL 歌曲） */
+  streamUrl?: string;
+  /** 本地歌曲的文件路径（用于拼接播放 URL） */
+  filePath?: string;
   playCount: number;
   likeCount: number;
   isFavorited?: boolean;

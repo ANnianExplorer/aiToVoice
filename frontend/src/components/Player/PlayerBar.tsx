@@ -5,9 +5,11 @@ import {
   StepBackwardOutlined, StepForwardOutlined,
   SoundOutlined, ReloadOutlined,
   SwapOutlined, OrderedListOutlined,
+  FileTextOutlined,
 } from '@ant-design/icons';
 import { usePlayerStore } from '../../stores/playerStore';
 import { useAudio } from '../../hooks/useAudio';
+import LyricsDrawer from '../Lyrics/LyricsDrawer';
 
 export default function PlayerBar() {
   const {
@@ -18,6 +20,7 @@ export default function PlayerBar() {
 
   const [isDragging, setIsDragging] = useState(false);
   const [sliderValue, setSliderValue] = useState(0);
+  const [lyricsOpen, setLyricsOpen] = useState(false);
 
   // Sync slider from store when not dragging
   useEffect(() => {
@@ -45,6 +48,11 @@ export default function PlayerBar() {
     'repeat-one': <ReloadOutlined />,
   }[playMode];
 
+  const handleLyricsSeek = (timeSec: number) => {
+    seek(timeSec);
+    setProgress(timeSec);
+  };
+
   if (!currentSong) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '0 16px' }}>
@@ -54,52 +62,74 @@ export default function PlayerBar() {
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '0 16px', gap: 16 }}>
-      <Image src={currentSong.coverUrl} width={56} height={56} style={{ borderRadius: 4 }}
-        fallback="data:image/png;base64,iVBORw0KGgo=" preview={false} />
-      <div style={{ width: 160 }}>
-        <Typography.Text strong style={{ color: '#fff', display: 'block' }} ellipsis>
-          {currentSong.title}
-        </Typography.Text>
-        <Typography.Text style={{ color: '#B3B3B3', fontSize: 12 }} ellipsis>
-          {currentSong.artistName}
-        </Typography.Text>
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '0 16px', gap: 16 }}>
+        {/* 歌曲信息 */}
+        <Image src={currentSong.coverUrl} width={56} height={56} style={{ borderRadius: 4 }}
+          fallback="data:image/png;base64,iVBORw0KGgo=" preview={false} />
+        <div style={{ width: 160 }}>
+          <Typography.Text strong style={{ color: '#fff', display: 'block' }} ellipsis>
+            {currentSong.title}
+          </Typography.Text>
+          <Typography.Text style={{ color: '#B3B3B3', fontSize: 12 }} ellipsis>
+            {currentSong.artistName}
+          </Typography.Text>
+        </div>
+
+        {/* 播放控制 */}
+        <Space>
+          <Button type="text" icon={modeIcon} onClick={cycleMode} style={{ color: '#B3B3B3' }} />
+          <Button type="text" icon={<StepBackwardOutlined />} onClick={playPrev} style={{ color: '#B3B3B3' }} />
+          <Button type="text" icon={isPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+            onClick={togglePlay} style={{ color: '#fff', fontSize: 28 }} />
+          <Button type="text" icon={<StepForwardOutlined />} onClick={playNext} style={{ color: '#B3B3B3' }} />
+        </Space>
+
+        {/* 进度条 */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Typography.Text style={{ color: '#B3B3B3', fontSize: 12, width: 40 }}>
+            {formatTime(sliderValue)}
+          </Typography.Text>
+          <Slider
+            value={sliderValue}
+            max={duration}
+            onChange={(v: number) => {
+              setIsDragging(true);
+              setSliderValue(v);
+            }}
+            onAfterChange={(v: number) => {
+              setIsDragging(false);
+              seek(v);
+              setProgress(v);
+            }}
+            styles={{ track: { background: '#1DB954' }, rail: { background: '#404040' } }}
+            tooltip={{ formatter: (v) => formatTime(v ?? 0) }} />
+          <Typography.Text style={{ color: '#B3B3B3', fontSize: 12, width: 40 }}>
+            {formatTime(duration)}
+          </Typography.Text>
+        </div>
+
+        {/* 音量 + 歌词按钮 */}
+        <Space>
+          <SoundOutlined style={{ color: '#B3B3B3' }} />
+          <Slider value={volume} max={1} step={0.01} onChange={setVolume}
+            style={{ width: 100 }}
+            styles={{ track: { background: '#1DB954' }, rail: { background: '#404040' } }} />
+          <Button
+            type="text"
+            icon={<FileTextOutlined />}
+            onClick={() => setLyricsOpen(!lyricsOpen)}
+            style={{ color: lyricsOpen ? '#1DB954' : '#B3B3B3' }}
+            title="歌词"
+          />
+        </Space>
       </div>
-      <Space>
-        <Button type="text" icon={modeIcon} onClick={cycleMode} style={{ color: '#B3B3B3' }} />
-        <Button type="text" icon={<StepBackwardOutlined />} onClick={playPrev} style={{ color: '#B3B3B3' }} />
-        <Button type="text" icon={isPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
-          onClick={togglePlay} style={{ color: '#fff', fontSize: 28 }} />
-        <Button type="text" icon={<StepForwardOutlined />} onClick={playNext} style={{ color: '#B3B3B3' }} />
-      </Space>
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Typography.Text style={{ color: '#B3B3B3', fontSize: 12, width: 40 }}>
-          {formatTime(sliderValue)}
-        </Typography.Text>
-        <Slider
-          value={sliderValue}
-          max={duration}
-          onChange={(v: number) => {
-            setIsDragging(true);
-            setSliderValue(v);
-          }}
-          onAfterChange={(v: number) => {
-            setIsDragging(false);
-            seek(v);
-            setProgress(v);
-          }}
-          styles={{ track: { background: '#1DB954' }, rail: { background: '#404040' } }}
-          tooltip={{ formatter: (v) => formatTime(v ?? 0) }} />
-        <Typography.Text style={{ color: '#B3B3B3', fontSize: 12, width: 40 }}>
-          {formatTime(duration)}
-        </Typography.Text>
-      </div>
-      <Space>
-        <SoundOutlined style={{ color: '#B3B3B3' }} />
-        <Slider value={volume} max={1} step={0.01} onChange={setVolume}
-          style={{ width: 100 }}
-          styles={{ track: { background: '#1DB954' }, rail: { background: '#404040' } }} />
-      </Space>
-    </div>
+
+      <LyricsDrawer
+        open={lyricsOpen}
+        onClose={() => setLyricsOpen(false)}
+        onSeek={handleLyricsSeek}
+      />
+    </>
   );
 }

@@ -6,6 +6,8 @@ import com.aitovoice.music.entity.Song;
 import com.aitovoice.music.repository.ArtistRepository;
 import com.aitovoice.music.repository.GenreRepository;
 import com.aitovoice.music.repository.SongRepository;
+import com.aitovoice.voice.entity.VoiceExercise;
+import com.aitovoice.voice.repository.VoiceExerciseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -22,6 +24,7 @@ public class DataInitializer implements CommandLineRunner {
     private final GenreRepository genreRepository;
     private final ArtistRepository artistRepository;
     private final SongRepository songRepository;
+    private final VoiceExerciseRepository exerciseRepository;
 
     @Override
     @Transactional
@@ -101,6 +104,19 @@ public class DataInitializer implements CommandLineRunner {
                 song("平凡之路", artists.get(4), folk, 290)
         ));
 
+        // Voice Exercises
+        if (exerciseRepository.count() == 0) {
+            exerciseRepository.saveAll(List.of(
+                    exercise("音阶练习", "基础音阶上下行练习，从低音到高音再回来", VoiceExercise.ExerciseType.PITCH, 1, 1),
+                    exercise("长音保持", "每个音保持10秒以上，训练气息控制", VoiceExercise.ExerciseType.BREATH, 2, 2),
+                    exercise("音准测试", "跟着示例音高演唱，测试音准能力", VoiceExercise.ExerciseType.PITCH, 3, 3),
+                    exercise("节奏感训练", "跟拍子演唱，训练节奏感", VoiceExercise.ExerciseType.RHYTHM, 2, 4),
+                    exercise("颤音练习", "练习声音颤音技巧", VoiceExercise.ExerciseType.VIBRATO, 3, 5),
+                    exercise("气息控制", "腹式呼吸练习，提升气息稳定性", VoiceExercise.ExerciseType.BREATH, 1, 6)
+            ));
+            log.info("Seeded 6 voice exercises");
+        }
+
         log.info("Seeded 8 genres, 8 artists, 30 songs");
     }
 
@@ -118,6 +134,16 @@ public class DataInitializer implements CommandLineRunner {
         a.setBio(bio);
         a.setSourceType(Artist.SourceType.LOCAL);
         return a;
+    }
+
+    private VoiceExercise exercise(String title, String desc, VoiceExercise.ExerciseType type, int difficulty, int order) {
+        var e = new VoiceExercise();
+        e.setTitle(title);
+        e.setDescription(desc);
+        e.setType(type);
+        e.setDifficulty(difficulty);
+        e.setSortOrder(order);
+        return e;
     }
 
     private Song song(String title, Artist artist, Genre genre, int duration) {

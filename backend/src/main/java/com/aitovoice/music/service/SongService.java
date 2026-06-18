@@ -28,15 +28,21 @@ public class SongService {
     private final UserSongRepository userSongRepository;
     private final FileStorageService fileStorage;
     private final SongMapper songMapper;
+    private final AudioDurationExtractor durationExtractor;
 
     @Transactional
     public SongDto upload(MultipartFile file, String title, Long artistId, Long genreId) {
         var filePath = fileStorage.store(file, "audio", Constants.ALLOWED_AUDIO_EXTENSIONS);
+
+        // 提取音频时长
+        var audioFile = fileStorage.getFilePath(filePath).toFile();
+        var duration = durationExtractor.extract(audioFile);
+
         var song = Song.builder()
                 .title(title)
                 .filePath(filePath)
                 .sourceType(Song.SourceType.LOCAL)
-                .duration(0)
+                .duration(duration)
                 .artist(artistId != null ? com.aitovoice.music.entity.Artist.builder().id(artistId).build() : null)
                 .genre(genreId != null ? com.aitovoice.music.entity.Genre.builder().id(genreId).build() : null)
                 .build();

@@ -1,10 +1,23 @@
 import client from './client';
 
-interface VoiceRecord {
+export interface VoiceExercise {
+  id: number;
+  title: string;
+  description: string;
+  type: string;
+  difficulty: number;
+  audioExamplePath: string | null;
+  instructions: string | null;
+  durationSec: number | null;
+  sortOrder: number;
+  createdAt: string;
+}
+
+export interface VoiceRecord {
   id: number;
   userId: number;
   songId: number | null;
-  filePath: string;
+  audioUrl: string;
   durationSec: number;
   pitchData: string;
   score: number;
@@ -12,7 +25,7 @@ interface VoiceRecord {
   createdAt: string;
 }
 
-interface AnalysisResult {
+export interface AnalysisResult {
   averagePitch: number;
   maxPitch: number;
   minPitch: number;
@@ -22,7 +35,7 @@ interface AnalysisResult {
   feedback: string;
 }
 
-interface PracticeProgress {
+export interface PracticeProgress {
   id: number;
   exerciseId: number;
   exerciseTitle: string;
@@ -34,6 +47,9 @@ interface PracticeProgress {
   startedAt: string;
   completedAt: string;
 }
+
+export const getExercises = () =>
+  client.get<VoiceExercise[]>('/voice/exercises').then(r => r.data);
 
 export const uploadRecord = (file: File, songId?: number) => {
   const formData = new FormData();

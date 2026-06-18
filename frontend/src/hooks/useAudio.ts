@@ -20,8 +20,21 @@ export function useAudio() {
       howlRef.current.unload();
     }
 
+    // Determine audio source:
+    // 1. External songs: use streamUrl directly
+    // 2. Local songs: use filePath (e.g. "audio/uuid.mp3") → /api/files/audio/audio/uuid.mp3
+    let src: string;
+    if ((currentSong as any).streamUrl) {
+      src = (currentSong as any).streamUrl;
+    } else if (currentSong.filePath) {
+      src = `${baseUrl}/api/files/audio/${currentSong.filePath}`;
+    } else {
+      // Fallback: try song ID (legacy behavior)
+      src = `${baseUrl}/api/files/audio/${currentSong.id}`;
+    }
+
     const howl = new Howl({
-      src: [`${baseUrl}/api/files/audio/${currentSong.id}`],
+      src: [src],
       html5: true,
       volume,
       onload: () => setDuration(howl.duration()),
@@ -41,7 +54,7 @@ export function useAudio() {
       howl.unload();
       cancelAnimationFrame(animRef.current);
     };
-  }, [currentSong?.id]);
+  }, [currentSong?.id, (currentSong as any)?.streamUrl, currentSong?.filePath]);
 
   useEffect(() => {
     howlRef.current?.volume(volume);

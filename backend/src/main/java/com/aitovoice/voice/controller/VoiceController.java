@@ -3,6 +3,7 @@ package com.aitovoice.voice.controller;
 import com.aitovoice.common.ApiResponse;
 import com.aitovoice.voice.dto.AnalysisResultDto;
 import com.aitovoice.voice.dto.PracticeProgressDto;
+import com.aitovoice.voice.dto.VoiceExerciseDto;
 import com.aitovoice.voice.dto.VoiceRecordDto;
 import com.aitovoice.voice.service.VoiceService;
 import com.aitovoice.user.entity.User;
@@ -19,6 +20,11 @@ import java.util.List;
 public class VoiceController {
 
     private final VoiceService voiceService;
+
+    @GetMapping("/exercises")
+    public ApiResponse<List<VoiceExerciseDto>> exercises() {
+        return ApiResponse.success(voiceService.getAllExercises());
+    }
 
     @PostMapping("/record")
     public ApiResponse<VoiceRecordDto> upload(

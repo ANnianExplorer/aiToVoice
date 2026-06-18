@@ -5,6 +5,7 @@ import com.aitovoice.common.ErrorCode;
 import com.aitovoice.music.service.FileStorageService;
 import com.aitovoice.voice.dto.AnalysisResultDto;
 import com.aitovoice.voice.dto.PracticeProgressDto;
+import com.aitovoice.voice.dto.VoiceExerciseDto;
 import com.aitovoice.voice.dto.VoiceRecordDto;
 import com.aitovoice.voice.entity.UserPracticeProgress;
 import com.aitovoice.voice.entity.VoiceRecord;
@@ -79,6 +80,15 @@ public class VoiceService {
         return recordRepository.findByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(
                         userId, org.springframework.data.domain.PageRequest.of(0, 100)).stream()
                 .map(this::toDto).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<VoiceExerciseDto> getAllExercises() {
+        return exerciseRepository.findAllByOrderBySortOrder().stream()
+                .map(e -> new VoiceExerciseDto(e.getId(), e.getTitle(), e.getDescription(),
+                        e.getType().name(), e.getDifficulty(), e.getAudioExamplePath(),
+                        e.getInstructions(), e.getDurationSec(), e.getSortOrder(), e.getCreatedAt()))
+                .toList();
     }
 
     @Transactional(readOnly = true)

@@ -8,6 +8,7 @@ public record SongDto(
         String genreName,
         Integer duration,
         String coverUrl,
+        String filePath,
         String sourceType,
         Long playCount,
         Long likeCount
