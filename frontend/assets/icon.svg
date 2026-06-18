@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1DB954"/>
+      <stop offset="100%" stop-color="#1ED760"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+    <clipPath id="circle">
+      <circle cx="256" cy="256" r="240"/>
+    </clipPath>
+  </defs>
+
+  <!-- 背景圆形 -->
+  <circle cx="256" cy="256" r="240" fill="url(#bg)" filter="url(#shadow)"/>
+
+  <!-- 音符组 -->
+  <g clip-path="url(#circle)" transform="translate(256,256) scale(1.1) translate(-256,-256)">
+    <!-- 左音符头部 -->
+    <ellipse cx="185" cy="338" rx="32" ry="24" fill="white" transform="rotate(-20,185,338)"/>
+
+    <!-- 右音符头部 -->
+    <ellipse cx="327" cy="338" rx="32" ry="24" fill="white" transform="rotate(-20,327,338)"/>
+
+    <!-- 左竖线 -->
+    <rect x="212" y="145" width="10" height="200" rx="5" fill="white"/>
+
+    <!-- 右竖线 -->
+    <rect x="354" y="145" width="10" height="200" rx="5" fill="white"/>
+
+    <!-- 顶部横梁 -->
+    <rect x="212" y="140" width="152" height="12" rx="6" fill="white"/>
+
+    <!-- 中间连接弧 -->
+    <path d="M 218 270 Q 286 230 358 270" stroke="white" stroke-width="10" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- 高光 -->
+  <ellipse cx="200" cy="180" rx="120" ry="80" fill="white" opacity="0.1" transform="rotate(-30,200,180)"/>
+</svg>

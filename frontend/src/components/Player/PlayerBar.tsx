@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Button, Slider, Typography, Space, Image } from 'antd';
+import { Button, Slider, Typography, Space } from 'antd';
 
 const { Text } = Typography;
 import {
@@ -21,7 +21,7 @@ export default function PlayerBar() {
     togglePlay, setVolume, playNext, playPrev, setPlayMode, setProgress,
   } = usePlayerStore();
   const { seek } = useAudio();
-  const { tokens, mode } = useTheme();
+  const { tokens } = useTheme();
 
   const [isDragging, setIsDragging] = useState(false);
   const [sliderValue, setSliderValue] = useState(0);
@@ -70,20 +70,21 @@ export default function PlayerBar() {
         display: 'flex', alignItems: 'center', height: '100%',
         padding: '0 16px', gap: 16,
       }}>
-        {/* 歌曲信息 — 可点击展开全屏 */}
+        {/* 歌曲信息 — 点击展开全屏 */}
         <div
           style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', minWidth: 0 }}
           onClick={() => setFullScreen(true)}
         >
-          <Image
-            src={currentSong.coverUrl}
-            width={52} height={52}
+          {/* 用原生 img 替代 Ant Design Image，避免点击事件被拦截 */}
+          <img
+            src={currentSong.coverUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='52'%3E%3Crect fill='%23282828' width='52' height='52' rx='4'/%3E%3Ccircle cx='26' cy='26' r='10' fill='%231DB954'/%3E%3C/svg%3E"}
+            alt={currentSong.title}
             style={{
-              borderRadius: mode === 'light' ? tokens.borderRadius : 4,
+              width: 52, height: 52,
+              borderRadius: tokens.borderRadius,
               flexShrink: 0,
+              objectFit: 'cover',
             }}
-            fallback="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='52'%3E%3Crect fill='%23282828' width='52' height='52' rx='4'/%3E%3Ccircle cx='26' cy='26' r='10' fill='%231DB954'/%3E%3C/svg%3E"
-            preview={false}
           />
           <div style={{ minWidth: 0, maxWidth: 160 }}>
             <Text strong style={{ color: tokens.textPrimary, display: 'block', fontSize: 14 }} ellipsis>

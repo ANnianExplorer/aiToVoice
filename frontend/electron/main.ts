@@ -6,7 +6,7 @@ let tray: Tray | null = null;
 let isQuitting = false; // 标记是否真正退出
 
 function createWindow() {
-  const iconPath = path.join(__dirname, '../assets/icon.png');
+  const iconPath = path.join(__dirname, '../assets/icon-256.png');
 
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -92,7 +92,7 @@ function registerGlobalShortcuts() {
 }
 
 function createTray() {
-  const trayIconPath = path.join(__dirname, '../assets/tray-icon.png');
+  const trayIconPath = path.join(__dirname, '../assets/tray-icon-16.png');
   const trayIcon = nativeImage.createFromPath(trayIconPath);
   tray = new Tray(trayIcon.isEmpty() ? nativeImage.createEmpty() : trayIcon);
 

@@ -5,7 +5,7 @@ let mainWindow = null;
 let tray = null;
 let isQuitting = false;
 function createWindow() {
-  const iconPath = path.join(__dirname, "../assets/icon.png");
+  const iconPath = path.join(__dirname, "../assets/icon-256.png");
   mainWindow = new electron.BrowserWindow({
     width: 1280,
     height: 800,
@@ -75,7 +75,7 @@ function registerGlobalShortcuts() {
   }
 }
 function createTray() {
-  const trayIconPath = path.join(__dirname, "../assets/tray-icon.png");
+  const trayIconPath = path.join(__dirname, "../assets/tray-icon-16.png");
   const trayIcon = electron.nativeImage.createFromPath(trayIconPath);
   tray = new electron.Tray(trayIcon.isEmpty() ? electron.nativeImage.createEmpty() : trayIcon);
   const contextMenu = electron.Menu.buildFromTemplate([
