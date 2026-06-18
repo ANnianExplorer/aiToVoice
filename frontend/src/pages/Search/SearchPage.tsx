@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Typography, Input, List, Button, message } from 'antd';
 import { SearchOutlined, PlayCircleOutlined, HeartOutlined } from '@ant-design/icons';
 import { useSearchParams } from 'react-router-dom';
-import { searchSongs } from '../../api/songs';
+import { searchSongs, toggleFavorite } from '../../api/songs';
 import { usePlayerStore } from '../../stores/playerStore';
 import type { Song } from '../../types';
 
@@ -29,9 +29,23 @@ export default function SearchPage() {
     }
   };
 
+  // Auto-search on mount when query param is present
+  useEffect(() => {
+    if (query) handleSearch(query);
+  }, []);
+
   const playSong = (song: Song) => {
     setPlaylist(results);
     setCurrentSong(song);
+  };
+
+  const handleFavorite = async (songId: number) => {
+    try {
+      await toggleFavorite(songId);
+      message.success('已收藏');
+    } catch {
+      message.error('收藏失败');
+    }
   };
 
   return (
@@ -53,7 +67,7 @@ export default function SearchPage() {
             style={{ background: '#181818', marginBottom: 4, borderRadius: 8, padding: '12px 16px' }}
             actions={[
               <Button type="text" icon={<PlayCircleOutlined />} onClick={() => playSong(song)} style={{ color: '#1DB954' }} />,
-              <Button type="text" icon={<HeartOutlined />} style={{ color: '#B3B3B3' }} />,
+              <Button type="text" icon={<HeartOutlined />} onClick={() => handleFavorite(song.id)} style={{ color: '#B3B3B3' }} />,
             ]}
           >
             <List.Item.Meta

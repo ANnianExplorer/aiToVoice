@@ -30,13 +30,14 @@ export default function SettingsPage() {
   const handleUpdate = async (field: string, value: unknown) => {
     try {
       await updateSettings({ [field]: value });
+      setSettings(prev => prev ? { ...prev, [field]: value } : prev);
       message.success('设置已保存');
     } catch {
       message.error('保存失败');
     }
   };
 
-  if (loading) return <Spin size="large" />;
+  if (loading || !settings) return <Spin size="large" />;
 
   return (
     <div>
@@ -45,7 +46,7 @@ export default function SettingsPage() {
         <Card title="外观" style={{ background: '#181818', border: '1px solid #282828', marginBottom: 16 }}>
           <Form layout="vertical">
             <Form.Item label="主题">
-              <Select defaultValue={settings?.theme || 'DARK'} onChange={(v) => handleUpdate('theme', v)}
+              <Select value={settings.theme} onChange={(v) => handleUpdate('theme', v)}
                 options={[
                   { value: 'DARK', label: '深色' },
                   { value: 'LIGHT', label: '浅色' },
@@ -53,7 +54,7 @@ export default function SettingsPage() {
                 ]} />
             </Form.Item>
             <Form.Item label="语言">
-              <Select defaultValue={settings?.language || 'zh-CN'} onChange={(v) => handleUpdate('language', v)}
+              <Select value={settings.language} onChange={(v) => handleUpdate('language', v)}
                 options={[
                   { value: 'zh-CN', label: '简体中文' },
                   { value: 'en', label: 'English' },
@@ -64,7 +65,7 @@ export default function SettingsPage() {
         <Card title="音频" style={{ background: '#181818', border: '1px solid #282828', marginBottom: 16 }}>
           <Form layout="vertical">
             <Form.Item label="音频质量">
-              <Select defaultValue={settings?.audioQuality || 'HIGH'} onChange={(v) => handleUpdate('audioQuality', v)}
+              <Select value={settings.audioQuality} onChange={(v) => handleUpdate('audioQuality', v)}
                 options={[
                   { value: 'LOW', label: '标准 (128kbps)' },
                   { value: 'HIGH', label: '高品质 (320kbps)' },
@@ -72,10 +73,10 @@ export default function SettingsPage() {
                 ]} />
             </Form.Item>
             <Form.Item label="交叉淡入淡出">
-              <Switch defaultChecked={settings?.crossfadeEnabled} onChange={(v) => handleUpdate('crossfadeEnabled', v)} />
+              <Switch checked={settings.crossfadeEnabled} onChange={(v) => handleUpdate('crossfadeEnabled', v)} />
             </Form.Item>
             <Form.Item label="歌词字体大小">
-              <Slider min={12} max={32} defaultValue={settings?.lyricFontSize || 16}
+              <Slider min={12} max={32} value={settings.lyricFontSize}
                 onChange={(v) => handleUpdate('lyricFontSize', v)} />
             </Form.Item>
           </Form>
@@ -83,10 +84,10 @@ export default function SettingsPage() {
         <Card title="其他" style={{ background: '#181818', border: '1px solid #282828', marginBottom: 16 }}>
           <Form layout="vertical">
             <Form.Item label="通知">
-              <Switch defaultChecked={settings?.notificationEnabled} onChange={(v) => handleUpdate('notificationEnabled', v)} />
+              <Switch checked={settings.notificationEnabled} onChange={(v) => handleUpdate('notificationEnabled', v)} />
             </Form.Item>
             <Form.Item label="启动时自动播放">
-              <Switch defaultChecked={settings?.autoPlayOnLaunch} onChange={(v) => handleUpdate('autoPlayOnLaunch', v)} />
+              <Switch checked={settings.autoPlayOnLaunch} onChange={(v) => handleUpdate('autoPlayOnLaunch', v)} />
             </Form.Item>
           </Form>
         </Card>

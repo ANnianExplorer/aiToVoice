@@ -18,6 +18,7 @@ public class LyricsService {
 
     private final LyricsRepository lyricsRepository;
     private static final Pattern LRC_TIME_PATTERN = Pattern.compile("\\[(\\d{2}):(\\d{2})\\.(\\d{2,3})\\](.*)");
+    private static final int[] MS_MULTIPLIER = {100, 10, 1}; // 2-digit=centiseconds, 3-digit=milliseconds
 
     @Transactional(readOnly = true)
     public String getLyrics(Long songId) {
@@ -47,7 +48,8 @@ public class LyricsService {
             while (matcher.find()) {
                 var min = Long.parseLong(matcher.group(1));
                 var sec = Long.parseLong(matcher.group(2));
-                var ms = Long.parseLong(matcher.group(3));
+                var msStr = matcher.group(3);
+                var ms = Long.parseLong(msStr) * MS_MULTIPLIER[msStr.length() - 2];
                 var text = matcher.group(4).trim();
                 var timeMs = (min * 60 + sec) * 1000 + ms;
                 if (!text.isEmpty()) {

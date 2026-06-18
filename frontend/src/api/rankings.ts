@@ -1,6 +1,6 @@
 import client from './client';
 
-interface RankingItem {
+export interface RankingItem {
   rankPosition: number;
   song: {
     id: number;

@@ -38,7 +38,7 @@ interface PracticeProgress {
 export const uploadRecord = (file: File, songId?: number) => {
   const formData = new FormData();
   formData.append('file', file);
-  if (songId) formData.append('songId', songId.toString());
+  if (songId !== undefined) formData.append('songId', songId.toString());
   return client.post<VoiceRecord>('/voice/record', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }).then(r => r.data);

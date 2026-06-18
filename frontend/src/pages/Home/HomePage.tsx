@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Typography, Row, Col, Card, Spin } from 'antd';
+import { Typography, Row, Col, Card, Spin, message } from 'antd';
 import { PlayCircleOutlined, FireOutlined } from '@ant-design/icons';
 import { getHotSongs, getNewSongs } from '../../api/songs';
 import { usePlayerStore } from '../../stores/playerStore';
@@ -15,11 +15,11 @@ export default function HomePage() {
 
   useEffect(() => {
     Promise.all([
-      getHotSongs(20).catch(() => [] as Song[]),
-      getNewSongs(20).catch(() => [] as Song[]),
-    ]).then(([hot, newSongs]) => {
+      getHotSongs(20).catch(() => { message.error('加载热门歌曲失败'); return [] as Song[]; }),
+      getNewSongs(20).catch(() => { message.error('加载新歌失败'); return [] as Song[]; }),
+    ]).then(([hot, fresh]) => {
       setHotSongs(hot);
-      setNewSongs(newSongs);
+      setNewSongs(fresh);
     }).finally(() => setLoading(false));
   }, []);
 

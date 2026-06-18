@@ -12,16 +12,19 @@ import java.util.List;
 
 public interface SongRepository extends JpaRepository<Song, Long> {
 
-    @Query("SELECT s FROM Song s WHERE s.deletedAt IS NULL AND s.title LIKE %:keyword%")
+    @Query("SELECT s FROM Song s LEFT JOIN FETCH s.artist LEFT JOIN FETCH s.album LEFT JOIN FETCH s.genre WHERE s.deletedAt IS NULL AND s.title LIKE %:keyword% ESCAPE '\\'")
     Page<Song> searchByTitle(@Param("keyword") String keyword, Pageable pageable);
 
-    @Query("SELECT s FROM Song s WHERE s.deletedAt IS NULL ORDER BY s.playCount DESC")
+    @Query("SELECT s FROM Song s LEFT JOIN FETCH s.artist LEFT JOIN FETCH s.album LEFT JOIN FETCH s.genre WHERE s.deletedAt IS NULL AND s.title LIKE %:keyword% ESCAPE '\\' AND s.genre.id = :genreId")
+    Page<Song> searchByTitleAndGenre(@Param("keyword") String keyword, @Param("genreId") Long genreId, Pageable pageable);
+
+    @Query("SELECT s FROM Song s LEFT JOIN FETCH s.artist LEFT JOIN FETCH s.album LEFT JOIN FETCH s.genre WHERE s.deletedAt IS NULL ORDER BY s.playCount DESC")
     List<Song> findHotSongs(Pageable pageable);
 
-    @Query("SELECT s FROM Song s WHERE s.deletedAt IS NULL ORDER BY s.createdAt DESC")
+    @Query("SELECT s FROM Song s LEFT JOIN FETCH s.artist LEFT JOIN FETCH s.album LEFT JOIN FETCH s.genre WHERE s.deletedAt IS NULL ORDER BY s.createdAt DESC")
     List<Song> findNewSongs(Pageable pageable);
 
-    @Query("SELECT s FROM Song s WHERE s.deletedAt IS NULL AND s.genre.id = :genreId ORDER BY s.playCount DESC")
+    @Query("SELECT s FROM Song s LEFT JOIN FETCH s.artist LEFT JOIN FETCH s.album LEFT JOIN FETCH s.genre WHERE s.deletedAt IS NULL AND s.genre.id = :genreId ORDER BY s.playCount DESC")
     List<Song> findByGenreId(@Param("genreId") Long genreId, Pageable pageable);
 
     @Modifying

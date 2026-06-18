@@ -40,7 +40,8 @@ public class PitchAnalyzer {
         var max = pitches.stream().mapToDouble(Double::doubleValue).max().orElse(0);
         var min = pitches.stream().mapToDouble(Double::doubleValue).min().orElse(0);
         var variance = pitches.stream().mapToDouble(p -> Math.pow(p - avg, 2)).average().orElse(0);
-        var stability = Math.max(0, 100 - (int) Math.sqrt(variance));
+        var sqrtVariance = Math.sqrt(variance);
+        var stability = (int) Math.max(0, Math.min(100, 100 - sqrtVariance));
 
         var score = calculateScore(avg, max, min, stability);
         var feedback = generateFeedback(score, stability);

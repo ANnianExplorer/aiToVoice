@@ -37,7 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 var userId = tokenProvider.getUserIdFromToken(token);
                 var user = userRepository.findById(userId).orElse(null);
 
-                if (user != null && !user.isDeleted()) {
+                if (user != null && !user.isDeleted() && user.getStatus() != com.aitovoice.user.entity.User.UserStatus.BANNED) {
                     var authentication = new UsernamePasswordAuthenticationToken(
                             user, null, List.of());
                     authentication.setDetails(

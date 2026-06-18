@@ -2,7 +2,9 @@ package com.aitovoice.music.controller;
 
 import com.aitovoice.common.ApiResponse;
 import com.aitovoice.music.service.LyricsService;
+import com.aitovoice.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -27,6 +29,7 @@ public class LyricsController {
 
     @PostMapping
     public ApiResponse<Void> saveLyrics(
+            @AuthenticationPrincipal User user,
             @PathVariable Long songId,
             @RequestBody String content,
             @RequestParam(defaultValue = "manual") String source) {

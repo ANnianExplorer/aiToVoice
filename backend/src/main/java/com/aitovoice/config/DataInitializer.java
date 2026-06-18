@@ -26,15 +26,17 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        if (songRepository.count() > 0) {
-            log.info("Database already has songs, skipping seed data");
+        // Check if data already exists to avoid re-seeding
+        var existingGenres = genreRepository.findAll();
+        if (!existingGenres.isEmpty() && songRepository.count() > 0) {
+            log.info("Database already has data, skipping seed");
             return;
         }
 
         log.info("Seeding demo data...");
 
         // Genres — use existing if present
-        var genres = genreRepository.findAll();
+        var genres = existingGenres;
         if (genres.isEmpty()) {
             genres = genreRepository.saveAll(List.of(
                     genre("Pop", "流行音乐", 1),

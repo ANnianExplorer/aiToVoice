@@ -37,6 +37,8 @@ public class SongService {
                 .filePath(filePath)
                 .sourceType(Song.SourceType.LOCAL)
                 .duration(0)
+                .artist(artistId != null ? com.aitovoice.music.entity.Artist.builder().id(artistId).build() : null)
+                .genre(genreId != null ? com.aitovoice.music.entity.Genre.builder().id(genreId).build() : null)
                 .build();
         songRepository.save(song);
         return songMapper.toDto(song);
@@ -45,7 +47,17 @@ public class SongService {
     @Transactional(readOnly = true)
     public Page<SongDto> search(SongSearchRequest request) {
         var pageable = PageRequest.of(request.page(), request.size());
-        var songs = songRepository.searchByTitle(request.keyword(), pageable);
+        var keyword = request.keyword();
+        if (keyword == null || keyword.isBlank()) {
+            return Page.empty(pageable);
+        }
+        var escaped = keyword.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+        Page<Song> songs;
+        if (request.genreId() != null) {
+            songs = songRepository.searchByTitleAndGenre(escaped, request.genreId(), pageable);
+        } else {
+            songs = songRepository.searchByTitle(escaped, pageable);
+        }
         return songs.map(songMapper::toDto);
     }
 
@@ -80,7 +92,7 @@ public class SongService {
         var existing = userSongRepository.findByUserIdAndSongIdAndType(
                 userId, songId, UserSong.UserSongType.HISTORY);
         if (existing.isPresent()) {
-            userSongRepository.incrementPlayCount(userId, songId);
+            userSongRepository.incrementPlayCount(userId, songId, UserSong.UserSongType.HISTORY);
         } else {
             var history = UserSong.builder()
                     .user(User.builder().id(userId).build())

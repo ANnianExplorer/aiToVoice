@@ -21,8 +21,9 @@ export const useAuthStore = create<AuthState>()(
 
       login: async (username, password) => {
         const res = await authApi.login({ username, password });
+        const role = (['USER', 'ADMIN'].includes(res.user.role) ? res.user.role : 'USER') as 'USER' | 'ADMIN';
         set({
-          user: { ...res.user, role: res.user.role as 'USER' | 'ADMIN' },
+          user: { ...res.user, role },
           token: res.token,
           isAuthenticated: true,
         });
@@ -30,8 +31,9 @@ export const useAuthStore = create<AuthState>()(
 
       register: async (username, email, password) => {
         const res = await authApi.register({ username, email, password });
+        const role = (['USER', 'ADMIN'].includes(res.user.role) ? res.user.role : 'USER') as 'USER' | 'ADMIN';
         set({
-          user: { ...res.user, role: res.user.role as 'USER' | 'ADMIN' },
+          user: { ...res.user, role },
           token: res.token,
           isAuthenticated: true,
         });

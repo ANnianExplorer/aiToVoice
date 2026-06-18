@@ -40,9 +40,22 @@ public class PlaylistService {
     }
 
     @Transactional(readOnly = true)
-    public PlaylistDto getById(Long id) {
+    public PlaylistDto getById(Long id, Long userId) {
         var playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PLAYLIST_NOT_FOUND));
+        if (!playlist.getIsPublic() && !playlist.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.PLAYLIST_ACCESS_DENIED);
+        }
+        return toDto(playlist);
+    }
+
+    @Transactional(readOnly = true)
+    public PlaylistDto getPublicById(Long id) {
+        var playlist = playlistRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PLAYLIST_NOT_FOUND));
+        if (!playlist.getIsPublic()) {
+            throw new BusinessException(ErrorCode.PLAYLIST_ACCESS_DENIED);
+        }
         return toDto(playlist);
     }
 

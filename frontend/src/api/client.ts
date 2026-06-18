@@ -26,6 +26,7 @@ client.interceptors.response.use(
   (response) => response.data,
   (error: AxiosError<{ message?: string }>) => {
     if (error.response?.status === 401) {
+      localStorage.removeItem('auth-storage');
       window.location.href = '/login';
     }
     const message = error.response?.data?.message || '网络错误';

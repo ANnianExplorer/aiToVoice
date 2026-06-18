@@ -28,8 +28,10 @@ public class PlaylistController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<PlaylistDto> getById(@PathVariable Long id) {
-        return ApiResponse.success(playlistService.getById(id));
+    public ApiResponse<PlaylistDto> getById(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id) {
+        return ApiResponse.success(playlistService.getById(id, user != null ? user.getId() : null));
     }
 
     @GetMapping("/my")

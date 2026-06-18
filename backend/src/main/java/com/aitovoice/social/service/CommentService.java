@@ -43,7 +43,7 @@ public class CommentService {
         var comment = commentRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
         if (!comment.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.PLAYLIST_ACCESS_DENIED);
+            throw new BusinessException(ErrorCode.COMMENT_ACCESS_DENIED);
         }
         comment.softDelete();
         commentRepository.save(comment);

@@ -48,11 +48,21 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     }
 
     if (playMode === 'shuffle') {
-      const next = playlist[Math.floor(Math.random() * playlist.length)];
+      const candidates = playlist.filter((s) => s.id !== currentSong.id);
+      if (candidates.length === 0) {
+        set({ progress: 0, isPlaying: true });
+        return;
+      }
+      const next = candidates[Math.floor(Math.random() * candidates.length)];
       set({ currentSong: next, progress: 0, isPlaying: true });
       return;
     }
 
+    // Sequential: guard against song not in playlist
+    if (idx === -1) {
+      set({ currentSong: playlist[0], progress: 0, isPlaying: true });
+      return;
+    }
     const nextIdx = (idx + 1) % playlist.length;
     set({ currentSong: playlist[nextIdx], progress: 0, isPlaying: true });
   },
@@ -61,6 +71,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     const { playlist, currentSong } = get();
     if (!currentSong || playlist.length === 0) return;
     const idx = playlist.findIndex((s) => s.id === currentSong.id);
+    // Guard against song not in playlist
+    if (idx === -1) {
+      set({ currentSong: playlist[playlist.length - 1], progress: 0, isPlaying: true });
+      return;
+    }
     const prevIdx = (idx - 1 + playlist.length) % playlist.length;
     set({ currentSong: playlist[prevIdx], progress: 0, isPlaying: true });
   },

@@ -25,5 +25,5 @@ public class Artist extends BaseEntity {
     @Column(name = "source_id", length = 100)
     private String sourceId;
 
-    public enum SourceType { LOCAL, NETEASE }
+    public enum SourceType { LOCAL, NETEASE, AUDIUS, JAMENDO }
 }

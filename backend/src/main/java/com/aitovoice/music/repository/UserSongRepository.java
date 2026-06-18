@@ -20,6 +20,6 @@ public interface UserSongRepository extends JpaRepository<UserSong, Long> {
     boolean existsByUserIdAndSongIdAndType(Long userId, Long songId, UserSong.UserSongType type);
 
     @Modifying
-    @Query("UPDATE UserSong us SET us.playCount = us.playCount + 1, us.lastPlayedAt = CURRENT_TIMESTAMP WHERE us.user.id = :userId AND us.song.id = :songId AND us.type = com.aitovoice.music.entity.UserSong$UserSongType.HISTORY")
-    int incrementPlayCount(@Param("userId") Long userId, @Param("songId") Long songId);
+    @Query("UPDATE UserSong us SET us.playCount = us.playCount + 1, us.lastPlayedAt = CURRENT_TIMESTAMP WHERE us.user.id = :userId AND us.song.id = :songId AND us.type = :type")
+    int incrementPlayCount(@Param("userId") Long userId, @Param("songId") Long songId, @Param("type") UserSong.UserSongType type);
 }

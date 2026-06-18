@@ -1,8 +1,12 @@
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/aitovoice_dev?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
+    password: ${DB_PASSWORD:yzh521}
   jpa:
     show-sql: true
+
+jwt:
+  secret: ${JWT_SECRET:myDefaultSecretKeyThatShouldBeChangedInProduction2026}
 
 logging:
   level:

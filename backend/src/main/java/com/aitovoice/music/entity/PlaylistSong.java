@@ -3,6 +3,8 @@ package com.aitovoice.music.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -10,6 +12,7 @@ import java.time.LocalDateTime;
 @Table(name = "playlist_songs", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"playlist_id", "song_id"})
 })
+@EntityListeners(AuditingEntityListener.class)
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @SuperBuilder
 public class PlaylistSong {
     @Id
@@ -24,7 +27,7 @@ public class PlaylistSong {
     @Column(name = "sort_order")
     @Builder.Default
     private Integer sortOrder = 0;
-    @Column(name = "added_at")
-    @Builder.Default
-    private LocalDateTime addedAt = LocalDateTime.now();
+    @CreatedDate
+    @Column(name = "added_at", updatable = false)
+    private LocalDateTime addedAt;
 }

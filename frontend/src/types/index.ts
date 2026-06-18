@@ -17,7 +17,7 @@ export interface Song {
   genreName: string;
   duration: number;
   coverUrl: string;
-  sourceType: 'LOCAL' | 'NETEASE';
+  sourceType: 'LOCAL' | 'NETEASE' | 'AUDIUS' | 'JAMENDO';
   playCount: number;
   likeCount: number;
   isFavorited?: boolean;
@@ -48,6 +48,7 @@ export interface AiMessage {
   sessionId: number;
   role: 'USER' | 'ASSISTANT';
   content: string;
+  msgType?: string;
   createdAt: string;
 }
 

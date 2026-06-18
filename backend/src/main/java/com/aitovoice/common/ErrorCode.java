@@ -30,7 +30,9 @@ public enum ErrorCode {
     EXERCISE_NOT_FOUND(404, "练习任务不存在"),
     AUDIO_ANALYSIS_FAILED(500, "音频分析失败"),
     AI_SESSION_NOT_FOUND(404, "AI 会话不存在"),
+    AI_SESSION_ACCESS_DENIED(403, "无权访问该 AI 会话"),
     AI_SERVICE_ERROR(502, "AI 服务异常"),
+    COMMENT_ACCESS_DENIED(403, "无权删除该评论"),
     VALIDATION_ERROR(400, "参数校验失败"),
     INTERNAL_ERROR(500, "服务器内部错误"),
     RATE_LIMITED(429, "请求过于频繁");

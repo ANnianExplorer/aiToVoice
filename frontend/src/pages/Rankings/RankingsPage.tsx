@@ -1,16 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Typography, Tabs, List, Button } from 'antd';
+import { Typography, Tabs, List, Button, message } from 'antd';
 import { FireOutlined, RocketOutlined, RiseOutlined, PlayCircleOutlined } from '@ant-design/icons';
-import { getHotRanking, getNewRanking, getRisingRanking } from '../../api/rankings';
+import { getHotRanking, getNewRanking, getRisingRanking, type RankingItem } from '../../api/rankings';
 import { usePlayerStore } from '../../stores/playerStore';
+import type { Song } from '../../types';
 
 const { Title, Text } = Typography;
-
-interface RankingItem {
-  rankPosition: number;
-  song: { id: number; title: string; artistName: string; coverUrl: string; duration: number };
-  score: number;
-}
 
 export default function RankingsPage() {
   const [hot, setHot] = useState<RankingItem[]>([]);
@@ -21,15 +16,28 @@ export default function RankingsPage() {
 
   useEffect(() => {
     Promise.all([
-      getHotRanking().catch(() => [] as RankingItem[]),
-      getNewRanking().catch(() => [] as RankingItem[]),
-      getRisingRanking().catch(() => [] as RankingItem[]),
+      getHotRanking().catch(() => { message.error('加载热歌榜失败'); return [] as RankingItem[]; }),
+      getNewRanking().catch(() => { message.error('加载新歌榜失败'); return [] as RankingItem[]; }),
+      getRisingRanking().catch(() => { message.error('加载飙升榜失败'); return [] as RankingItem[]; }),
     ]).then(([h, n, r]) => {
       setHot(h);
       setNewSongs(n);
       setRising(r);
     }).finally(() => setLoading(false));
   }, []);
+
+  const toSong = (item: RankingItem): Song => ({
+    id: item.song.id,
+    title: item.song.title,
+    artistName: item.song.artistName || '',
+    albumName: item.song.albumName || '',
+    genreName: '',
+    sourceType: 'LOCAL',
+    duration: item.song.duration || 0,
+    coverUrl: item.song.coverUrl || '',
+    playCount: item.song.playCount || 0,
+    likeCount: 0,
+  });
 
   const renderList = (items: RankingItem[]) => (
     <List
@@ -41,8 +49,8 @@ export default function RankingsPage() {
           actions={[
             <Button type="text" icon={<PlayCircleOutlined />} style={{ color: '#1DB954' }}
               onClick={() => {
-                setPlaylist(items.map(i => ({ ...i.song, artistName: '', albumName: '', genreName: '', sourceType: 'LOCAL' as const, playCount: 0, likeCount: 0 })));
-                setCurrentSong({ ...item.song, artistName: '', albumName: '', genreName: '', sourceType: 'LOCAL' as const, playCount: 0, likeCount: 0 });
+                setPlaylist(items.map(toSong));
+                setCurrentSong(toSong(item));
               }} />,
           ]}
         >
@@ -51,6 +59,7 @@ export default function RankingsPage() {
           </span>
           <List.Item.Meta
             title={<Text style={{ color: '#fff' }}>{item.song.title}</Text>}
+            description={<Text style={{ color: '#B3B3B3' }}>{item.song.artistName || ''}</Text>}
           />
         </List.Item>
       )}

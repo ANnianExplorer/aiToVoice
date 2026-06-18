@@ -40,4 +40,10 @@ public class AuthController {
     public ApiResponse<UserDto> me(@AuthenticationPrincipal User user) {
         return ApiResponse.success(userMapper.toDto(user));
     }
+
+    @Operation(summary = "刷新 Token", description = "使用 Refresh Token 获取新的 Access Token")
+    @PostMapping("/refresh")
+    public ApiResponse<AuthResponse> refresh(@RequestParam String refreshToken) {
+        return ApiResponse.success(authService.refresh(refreshToken));
+    }
 }

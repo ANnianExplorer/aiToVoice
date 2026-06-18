@@ -34,8 +34,10 @@ public class VoiceController {
     }
 
     @PostMapping("/records/{id}/analyze")
-    public ApiResponse<AnalysisResultDto> analyze(@PathVariable Long id) {
-        return ApiResponse.success(voiceService.analyzeRecord(id));
+    public ApiResponse<AnalysisResultDto> analyze(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id) {
+        return ApiResponse.success(voiceService.analyzeRecord(id, user.getId()));
     }
 
     @GetMapping("/progress")

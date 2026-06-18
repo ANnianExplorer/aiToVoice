@@ -49,9 +49,12 @@ public class VoiceService {
     }
 
     @Transactional
-    public AnalysisResultDto analyzeRecord(Long recordId) {
+    public AnalysisResultDto analyzeRecord(Long recordId, Long userId) {
         var record = recordRepository.findById(recordId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.VOICE_RECORD_NOT_FOUND));
+        if (!record.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.AUTH_UNAUTHORIZED);
+        }
 
         try {
             var filePath = fileStorage.getFilePath(record.getFilePath());
@@ -73,7 +76,8 @@ public class VoiceService {
 
     @Transactional(readOnly = true)
     public List<VoiceRecordDto> getUserRecords(Long userId) {
-        return recordRepository.findByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(userId).stream()
+        return recordRepository.findByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(
+                        userId, org.springframework.data.domain.PageRequest.of(0, 100)).stream()
                 .map(this::toDto).toList();
     }
 
@@ -114,9 +118,10 @@ public class VoiceService {
     }
 
     private VoiceRecordDto toDto(VoiceRecord r) {
+        var audioUrl = "/api/files/audio/" + r.getFilePath();
         return new VoiceRecordDto(r.getId(), r.getUser().getId(),
                 r.getSong() != null ? r.getSong().getId() : null,
-                r.getFilePath(), r.getDurationSec(), r.getPitchData(),
+                audioUrl, r.getDurationSec(), r.getPitchData(),
                 r.getScore(), r.getFeedbackText(), r.getCreatedAt());
     }
 

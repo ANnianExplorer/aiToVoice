@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "user_songs", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "song_id", "type"})
+}, indexes = {
+        @Index(name = "idx_user_songs_user_type", columnList = "user_id, type, deleted_at, last_played_at")
 })
 @Where(clause = "deleted_at IS NULL")
 @SQLDelete(sql = "UPDATE user_songs SET deleted_at = NOW() WHERE id = ?")

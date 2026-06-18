@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Typography, Tabs, List, Button } from 'antd';
+import { Typography, Tabs, List, Button, message } from 'antd';
 import { HeartOutlined, HistoryOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import { getFavorites, getHistory } from '../../api/songs';
 import { usePlayerStore } from '../../stores/playerStore';
@@ -15,8 +15,8 @@ export default function LibraryPage() {
 
   useEffect(() => {
     Promise.all([
-      getFavorites().catch(() => [] as Song[]),
-      getHistory().catch(() => [] as Song[]),
+      getFavorites().catch(() => { message.error('加载收藏失败'); return [] as Song[]; }),
+      getHistory().catch(() => { message.error('加载播放历史失败'); return [] as Song[]; }),
     ]).then(([fav, hist]) => {
       setFavorites(fav);
       setHistory(hist);

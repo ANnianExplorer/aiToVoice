@@ -61,12 +61,18 @@ public class AiService {
 
     @Transactional(readOnly = true)
     public List<AiSessionDto> getUserSessions(Long userId) {
-        return sessionRepository.findByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(userId).stream()
+        return sessionRepository.findByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(
+                        userId, org.springframework.data.domain.PageRequest.of(0, 50)).stream()
                 .map(this::toSessionDto).toList();
     }
 
     @Transactional(readOnly = true)
-    public List<AiMessageDto> getSessionMessages(Long sessionId) {
+    public List<AiMessageDto> getSessionMessages(Long sessionId, Long userId) {
+        var session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.AI_SESSION_NOT_FOUND));
+        if (!session.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.AI_SESSION_ACCESS_DENIED);
+        }
         return messageRepository.findBySessionIdOrderByCreatedAtAsc(sessionId).stream()
                 .map(this::toMessageDto).toList();
     }
@@ -76,18 +82,10 @@ public class AiService {
         var session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.AI_SESSION_NOT_FOUND));
         if (!session.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.PLAYLIST_ACCESS_DENIED);
+            throw new BusinessException(ErrorCode.AI_SESSION_ACCESS_DENIED);
         }
 
-        // Save user message
-        var userMsg = AiMessage.builder()
-                .session(session)
-                .role(AiMessage.MessageRole.USER)
-                .content(request.content())
-                .build();
-        messageRepository.save(userMsg);
-
-        // Build conversation context
+        // Build conversation context (load history BEFORE saving new message)
         var systemPrompt = session.getSessionType() == AiSession.SessionType.VOICE_COACH
                 ? VOICE_COACH_SYSTEM : GENERAL_SYSTEM;
         var messages = new ArrayList<Map<String, String>>();
@@ -100,6 +98,15 @@ public class AiService {
                     "content", msg.getContent()
             ));
         }
+
+        // Save user message (after building context to avoid duplication)
+        var userMsg = AiMessage.builder()
+                .session(session)
+                .role(AiMessage.MessageRole.USER)
+                .content(request.content())
+                .build();
+        messageRepository.save(userMsg);
+        messages.add(Map.of("role", "user", "content", request.content()));
 
         // Get AI response
         var aiResponse = aiClient.chat(messages);

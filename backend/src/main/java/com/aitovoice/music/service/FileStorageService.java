@@ -38,12 +38,15 @@ public class FileStorageService {
         }
     }
 
-    public String getUploadDir() {
-        return uploadDir.toString();
+    public Path getUploadDirPath() {
+        return uploadDir;
     }
 
     public Path getFilePath(String relativePath) {
         var path = uploadDir.resolve(relativePath).normalize();
+        if (!path.startsWith(uploadDir)) {
+            throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
+        }
         if (!Files.exists(path)) {
             throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
         }

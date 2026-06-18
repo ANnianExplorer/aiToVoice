@@ -24,12 +24,7 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (request.username() == null || request.username().length() < 3 || request.username().length() > 20) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "用户名长度 3-20 个字符");
-        }
-        if (request.password() == null || request.password().length() < 8) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "密码长度不能少于 8 个字符");
-        }
+        // Validation handled by @Valid on RegisterRequest DTO
         if (userRepository.existsByUsername(request.username())) {
             throw new BusinessException(ErrorCode.USER_ALREADY_EXISTS);
         }
@@ -61,6 +56,17 @@ public class AuthService {
             throw new BusinessException(ErrorCode.AUTH_INVALID_CREDENTIALS);
         }
 
+        return buildAuthResponse(user);
+    }
+
+    @Transactional(readOnly = true)
+    public AuthResponse refresh(String refreshToken) {
+        if (!tokenProvider.validateToken(refreshToken)) {
+            throw new BusinessException(ErrorCode.AUTH_TOKEN_INVALID);
+        }
+        var userId = tokenProvider.getUserIdFromToken(refreshToken);
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         return buildAuthResponse(user);
     }
 

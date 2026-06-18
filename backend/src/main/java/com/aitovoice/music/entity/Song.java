@@ -46,5 +46,5 @@ public class Song extends BaseEntity {
     @Builder.Default
     private Long likeCount = 0L;
 
-    public enum SourceType { LOCAL, NETEASE }
+    public enum SourceType { LOCAL, NETEASE, AUDIUS, JAMENDO }
 }

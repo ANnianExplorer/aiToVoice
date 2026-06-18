@@ -26,3 +26,6 @@ export const register = (data: RegisterRequest) =>
 
 export const getMe = () =>
   client.get<User>('/auth/me').then(r => r.data);
+
+export const refreshToken = (token: string) =>
+  client.post<AuthResponse>('/auth/refresh', null, { params: { refreshToken: token } }).then(r => r.data);

@@ -4,7 +4,6 @@ import com.aitovoice.common.BaseEntity;
 import com.aitovoice.music.entity.Song;
 import com.aitovoice.user.entity.User;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
@@ -25,7 +24,6 @@ public class Comment extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Comment parent;
-    @NotBlank
     @Column(length = 2000)
     private String content;
     @Column(name = "likes_count")

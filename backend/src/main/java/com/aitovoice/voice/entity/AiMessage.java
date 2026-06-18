@@ -8,7 +8,9 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 @Entity
-@Table(name = "ai_messages")
+@Table(name = "ai_messages", indexes = {
+        @Index(name = "idx_ai_messages_session", columnList = "session_id, created_at")
+})
 @Where(clause = "deleted_at IS NULL")
 @SQLDelete(sql = "UPDATE ai_messages SET deleted_at = NOW() WHERE id = ?")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @SuperBuilder

@@ -31,8 +31,10 @@ public class AiController {
     }
 
     @GetMapping("/sessions/{id}/messages")
-    public ApiResponse<List<AiMessageDto>> sessionMessages(@PathVariable Long id) {
-        return ApiResponse.success(aiService.getSessionMessages(id));
+    public ApiResponse<List<AiMessageDto>> sessionMessages(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id) {
+        return ApiResponse.success(aiService.getSessionMessages(id, user.getId()));
     }
 
     @PostMapping("/sessions/{id}/messages")

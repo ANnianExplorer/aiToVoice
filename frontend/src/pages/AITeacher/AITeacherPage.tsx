@@ -40,11 +40,23 @@ export default function AITeacherPage() {
 
   const handleSend = async () => {
     if (!input.trim() || !activeSession) return;
+    const userContent = input.trim();
     setLoading(true);
     try {
-      const msg = await sendMessage(activeSession, input);
-      setMessages(prev => [...prev, msg]);
+      // Show user message immediately
+      const userMsg: AiMessage = {
+        id: Date.now(),
+        sessionId: activeSession,
+        role: 'USER',
+        content: userContent,
+        msgType: 'TEXT',
+        createdAt: new Date().toISOString(),
+      };
+      setMessages(prev => [...prev, userMsg]);
       setInput('');
+
+      const msg = await sendMessage(activeSession, userContent);
+      setMessages(prev => [...prev, msg]);
     } catch {
       message.error('发送失败');
     } finally {

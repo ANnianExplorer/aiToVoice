@@ -1,9 +1,9 @@
 package com.aitovoice.voice.service;
 
 import com.aitovoice.voice.dto.AnalysisResultDto;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class ScoreCalculator {
 
     public int calculateOverall(AnalysisResultDto pitch, AnalysisResultDto rhythm) {

@@ -25,7 +25,7 @@ export default function TopBar() {
         prefix={<SearchOutlined />}
         placeholder="搜索歌曲、歌手、歌单..."
         style={{ width: 400, background: '#282828', border: 'none', borderRadius: 20 }}
-        onPressEnter={(e) => navigate(`/search?q=${(e.target as HTMLInputElement).value}`)}
+        onPressEnter={(e) => navigate(`/search?q=${encodeURIComponent((e.target as HTMLInputElement).value)}`)}
       />
       <Dropdown menu={dropdownItems} placement="bottomRight">
         <Space style={{ cursor: 'pointer' }}>

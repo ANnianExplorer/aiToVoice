@@ -32,6 +32,11 @@ export function useAudio() {
     progressRef.current = 0;
     setProgress(0);
 
+    // Auto-play when a new song is set
+    if (isPlaying) {
+      howl.play();
+    }
+
     return () => {
       howl.unload();
       cancelAnimationFrame(animRef.current);

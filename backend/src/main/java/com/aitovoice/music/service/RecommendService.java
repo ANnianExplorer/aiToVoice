@@ -33,8 +33,9 @@ public class RecommendService {
 
     @Transactional(readOnly = true)
     public SongDto getRandomForFM(Long userId) {
-        var songs = songRepository.findAll(PageRequest.of(0, 100)).getContent();
-        if (songs.isEmpty()) return null;
+        var songs = songRepository.findHotSongs(PageRequest.of(0, 50));
+        if (songs.isEmpty()) throw new com.aitovoice.common.BusinessException(
+                com.aitovoice.common.ErrorCode.SONG_NOT_FOUND, "暂无歌曲");
         var random = songs.get((int) (Math.random() * songs.size()));
         return songMapper.toDto(random);
     }
@@ -47,11 +48,9 @@ public class RecommendService {
                 .map(songMapper::toDto).toList();
     }
 
+    @Transactional
     public void feedback(Long userId, Long songId, boolean liked) {
-        var existing = recommendRepository.findByUserIdAndDeletedAtIsNullOrderByScoreDesc(
-                userId, PageRequest.of(0, 100)).stream()
-                .filter(r -> r.getSong().getId().equals(songId))
-                .findFirst();
+        var existing = recommendRepository.findByUserIdAndSongIdAndDeletedAtIsNull(userId, songId);
         existing.ifPresent(r -> {
             r.setScore(liked ? r.getScore() * 1.2 : r.getScore() * 0.5);
             r.setIsClicked(true);

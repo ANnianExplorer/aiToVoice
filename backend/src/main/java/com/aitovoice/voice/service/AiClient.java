@@ -65,7 +65,7 @@ public class AiClient {
 
             if (response.statusCode() / 100 != 2) {
                 throw new BusinessException(ErrorCode.AI_SERVICE_ERROR,
-                        "OpenAI 返回错误状态码: " + response.statusCode() + ", body: " + response.body());
+                        "OpenAI 返回错误状态码: " + response.statusCode());
             }
 
             var result = objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
@@ -106,7 +106,7 @@ public class AiClient {
 
             if (response.statusCode() / 100 != 2) {
                 throw new BusinessException(ErrorCode.AI_SERVICE_ERROR,
-                        "Claude 返回错误状态码: " + response.statusCode() + ", body: " + response.body());
+                        "Claude 返回错误状态码: " + response.statusCode());
             }
 
             var result = objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
