@@ -3,6 +3,7 @@ import { Typography, Row, Col, Card, Spin, message } from 'antd';
 import { PlayCircleOutlined, FireOutlined } from '@ant-design/icons';
 import { getHotSongs, getNewSongs } from '../../api/songs';
 import { usePlayerStore } from '../../stores/playerStore';
+import { useTheme } from '../../theme/ThemeProvider';
 import type { Song } from '../../types';
 
 const { Title, Text } = Typography;
@@ -12,6 +13,7 @@ export default function HomePage() {
   const [newSongs, setNewSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const { setCurrentSong, setPlaylist } = usePlayerStore();
+  const { tokens } = useTheme();
 
   useEffect(() => {
     Promise.all([
@@ -32,33 +34,44 @@ export default function HomePage() {
     return <div style={{ textAlign: 'center', padding: 100 }}><Spin size="large" /></div>;
   }
 
+  const cardStyle = () => ({
+    background: tokens.bgCard,
+    border: `1px solid ${tokens.border}`,
+    borderRadius: tokens.borderRadiusLg,
+    overflow: 'hidden' as const,
+  });
+
   return (
     <div>
-      <Title level={2} style={{ color: '#fff', marginBottom: 24 }}>发现音乐</Title>
+      <Title level={2} style={{ color: tokens.textPrimary, marginBottom: 24, fontFamily: tokens.fontFamily }}>
+        发现音乐
+      </Title>
 
+      {/* 热门歌曲 */}
       <div style={{ marginBottom: 32 }}>
-        <Title level={4} style={{ color: '#fff' }}>
+        <Title level={4} style={{ color: tokens.textPrimary, fontFamily: tokens.fontFamily }}>
           <FireOutlined style={{ color: '#E74C3C', marginRight: 8 }} />热门歌曲
         </Title>
         <Row gutter={[16, 16]}>
           {hotSongs.slice(0, 8).map((song) => (
-            <Col span={6} key={song.id}>
+            <Col xs={24} sm={12} md={8} lg={6} key={song.id}>
               <Card
                 hoverable
-                style={{ background: '#181818', border: '1px solid #282828' }}
+                style={cardStyle()}
                 cover={
                   <div style={{
-                    height: 160, background: '#282828',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    height: 160,
+                    background: tokens.bgElevated,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <PlayCircleOutlined style={{ fontSize: 48, color: '#1DB954' }} />
+                    <PlayCircleOutlined style={{ fontSize: 48, color: tokens.accent }} />
                   </div>
                 }
                 onClick={() => playSong(song, hotSongs)}
               >
                 <Card.Meta
-                  title={<Text style={{ color: '#fff' }} ellipsis>{song.title}</Text>}
-                  description={<Text style={{ color: '#B3B3B3' }} ellipsis>{song.artistName}</Text>}
+                  title={<Text style={{ color: tokens.textPrimary }} ellipsis>{song.title}</Text>}
+                  description={<Text style={{ color: tokens.textSecondary }} ellipsis>{song.artistName}</Text>}
                 />
               </Card>
             </Col>
@@ -66,19 +79,22 @@ export default function HomePage() {
         </Row>
       </div>
 
+      {/* 新歌速递 */}
       <div>
-        <Title level={4} style={{ color: '#fff' }}>新歌速递</Title>
+        <Title level={4} style={{ color: tokens.textPrimary, fontFamily: tokens.fontFamily }}>
+          新歌速递
+        </Title>
         <Row gutter={[16, 16]}>
           {newSongs.slice(0, 8).map((song) => (
-            <Col span={6} key={song.id}>
+            <Col xs={24} sm={12} md={8} lg={6} key={song.id}>
               <Card
                 hoverable
-                style={{ background: '#181818', border: '1px solid #282828' }}
+                style={cardStyle()}
                 onClick={() => playSong(song, newSongs)}
               >
                 <Card.Meta
-                  title={<Text style={{ color: '#fff' }} ellipsis>{song.title}</Text>}
-                  description={<Text style={{ color: '#B3B3B3' }} ellipsis>{song.artistName}</Text>}
+                  title={<Text style={{ color: tokens.textPrimary }} ellipsis>{song.title}</Text>}
+                  description={<Text style={{ color: tokens.textSecondary }} ellipsis>{song.artistName}</Text>}
                 />
               </Card>
             </Col>

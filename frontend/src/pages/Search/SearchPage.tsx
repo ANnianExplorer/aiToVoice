@@ -5,21 +5,20 @@ import { useSearchParams } from 'react-router-dom';
 import { searchSongs, toggleFavorite } from '../../api/songs';
 import { searchExternal, type ExternalTrack } from '../../api/musicSource';
 import { usePlayerStore } from '../../stores/playerStore';
+import { useTheme } from '../../theme/ThemeProvider';
 import type { Song } from '../../types';
 
 const { Title, Text } = Typography;
 
-/** 将 ExternalTrack 转为 Song 类型供播放器使用 */
 function externalToSong(track: ExternalTrack): Song {
   return {
-    id: -1, // 外部歌曲无本地 ID
+    id: -1,
     title: track.title,
     artistName: track.artistName,
     albumName: track.albumName ?? '',
     coverUrl: track.coverUrl ?? '',
     duration: track.durationSec,
     sourceType: track.source as Song['sourceType'],
-    // 外部歌曲用 streamUrl 作为唯一标识
     streamUrl: track.streamUrl,
   } as Song & { streamUrl: string };
 }
@@ -32,6 +31,7 @@ export default function SearchPage() {
   const [activeTab, setActiveTab] = useState('local');
   const query = searchParams.get('q') || '';
   const { setCurrentSong, setPlaylist } = usePlayerStore();
+  const { tokens } = useTheme();
 
   const handleSearch = async (value: string) => {
     if (!value.trim()) return;
@@ -63,7 +63,6 @@ export default function SearchPage() {
 
   const playExternalSong = (track: ExternalTrack) => {
     const song = externalToSong(track);
-    // 外部歌曲的播放需要特殊处理：用 streamUrl
     setPlaylist([song]);
     setCurrentSong(song);
   };
@@ -83,16 +82,31 @@ export default function SearchPage() {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
+  const listItemStyle = {
+    background: tokens.bgCard,
+    marginBottom: 4,
+    borderRadius: tokens.borderRadius,
+    padding: '12px 16px',
+    border: `1px solid ${tokens.border}`,
+  };
+
   return (
     <div>
-      <Title level={2} style={{ color: '#fff' }}>发现</Title>
+      <Title level={2} style={{ color: tokens.textPrimary, fontFamily: tokens.fontFamily }}>发现</Title>
       <Input
-        prefix={<SearchOutlined />}
+        prefix={<SearchOutlined style={{ color: tokens.textTertiary }} />}
         placeholder="搜索歌曲、歌手、歌单..."
         size="large"
         defaultValue={query}
         onPressEnter={(e) => handleSearch((e.target as HTMLInputElement).value)}
-        style={{ background: '#282828', border: 'none', borderRadius: 20, maxWidth: 600, marginBottom: 24 }}
+        style={{
+          background: tokens.bgElevated,
+          border: `1px solid ${tokens.border}`,
+          borderRadius: 20,
+          maxWidth: 600,
+          marginBottom: 24,
+          color: tokens.textPrimary,
+        }}
       />
 
       <Tabs
@@ -109,15 +123,23 @@ export default function SearchPage() {
                 locale={{ emptyText: '暂无结果' }}
                 renderItem={(song) => (
                   <List.Item
-                    style={{ background: '#181818', marginBottom: 4, borderRadius: 8, padding: '12px 16px' }}
+                    style={listItemStyle}
                     actions={[
-                      <Button type="text" icon={<PlayCircleOutlined />} onClick={() => playLocalSong(song)} style={{ color: '#1DB954' }} />,
-                      <Button type="text" icon={<HeartOutlined />} onClick={() => handleFavorite(song.id)} style={{ color: '#B3B3B3' }} />,
+                      <Button type="text" icon={<PlayCircleOutlined />}
+                        onClick={() => playLocalSong(song)}
+                        style={{ color: tokens.accent }} />,
+                      <Button type="text" icon={<HeartOutlined />}
+                        onClick={() => handleFavorite(song.id)}
+                        style={{ color: tokens.textSecondary }} />,
                     ]}
                   >
                     <List.Item.Meta
-                      title={<Text style={{ color: '#fff' }}>{song.title}</Text>}
-                      description={<Text style={{ color: '#B3B3B3' }}>{song.artistName} · {song.albumName}</Text>}
+                      title={<Text style={{ color: tokens.textPrimary }}>{song.title}</Text>}
+                      description={
+                        <Text style={{ color: tokens.textSecondary }}>
+                          {song.artistName} · {song.albumName}
+                        </Text>
+                      }
                     />
                   </List.Item>
                 )}
@@ -134,34 +156,34 @@ export default function SearchPage() {
                 locale={{ emptyText: '暂无结果' }}
                 renderItem={(track) => (
                   <List.Item
-                    style={{ background: '#181818', marginBottom: 4, borderRadius: 8, padding: '12px 16px' }}
+                    style={listItemStyle}
                     actions={[
-                      <Button type="text" icon={<PlayCircleOutlined />} onClick={() => playExternalSong(track)} style={{ color: '#1DB954' }} />,
+                      <Button type="text" icon={<PlayCircleOutlined />}
+                        onClick={() => playExternalSong(track)}
+                        style={{ color: tokens.accent }} />,
                     ]}
                   >
                     <List.Item.Meta
                       title={
                         <Space>
-                          <Text style={{ color: '#fff' }}>{track.title}</Text>
+                          <Text style={{ color: tokens.textPrimary }}>{track.title}</Text>
                           <Tag color="blue" style={{ fontSize: 11 }}>{track.source}</Tag>
                         </Space>
                       }
                       description={
                         <Space>
-                          <Text style={{ color: '#B3B3B3' }}>{track.artistName}</Text>
+                          <Text style={{ color: tokens.textSecondary }}>{track.artistName}</Text>
                           {track.durationSec > 0 && (
-                            <Text style={{ color: '#666', fontSize: 12 }}>
+                            <Text style={{ color: tokens.textTertiary, fontSize: 12 }}>
                               {formatDuration(track.durationSec)}
                             </Text>
                           )}
                           {track.playCount > 0 && (
-                            <Text style={{ color: '#666', fontSize: 12 }}>
+                            <Text style={{ color: tokens.textTertiary, fontSize: 12 }}>
                               ▶ {track.playCount.toLocaleString()}
                             </Text>
                           )}
-                          {track.genre && (
-                            <Tag style={{ fontSize: 11 }}>{track.genre}</Tag>
-                          )}
+                          {track.genre && <Tag style={{ fontSize: 11 }}>{track.genre}</Tag>}
                         </Space>
                       }
                     />

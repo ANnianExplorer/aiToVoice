@@ -1,18 +1,23 @@
+/* 基础变量 — 由 ThemeProvider 动态覆盖 */
 :root {
   --bg-primary: #121212;
   --bg-secondary: #181818;
   --bg-elevated: #282828;
-  --bg-highlight: #333333;
+  --bg-card: #181818;
+  --bg-hover: #282828;
   --text-primary: #FFFFFF;
   --text-secondary: #B3B3B3;
-  --text-subdued: #6A6A6A;
-  --accent-green: #1DB954;
-  --accent-green-hover: #1ED760;
-  --error-red: #E74C3C;
-  --border-radius: 8px;
+  --text-tertiary: #6A6A6A;
+  --accent: #1DB954;
+  --accent-hover: #1ed760;
+  --border: #282828;
+  --border-light: #333333;
   --sidebar-width: 240px;
   --player-height: 90px;
   --topbar-height: 64px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --transition: all 0.3s ease;
 }
 
 * {
@@ -24,8 +29,9 @@
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
   overflow: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #root {
@@ -33,6 +39,7 @@ body {
   height: 100vh;
 }
 
+/* 滚动条 — 暗色/亮色自适应 */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -42,10 +49,70 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-highlight);
+  background: var(--border-light);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-subdued);
+  background: var(--text-tertiary);
+}
+
+/* 主题切换动画 */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+}
+
+/* 但不要让所有元素都有动画，只对需要的元素 */
+.no-transition,
+.no-transition *,
+.no-transition *::before,
+.no-transition *::after {
+  transition: none !important;
+}
+
+/* Ant Design 菜单项暗色适配 */
+.ant-menu-item {
+  color: var(--text-secondary) !important;
+}
+
+.ant-menu-item-selected {
+  color: var(--text-primary) !important;
+  background: var(--bg-hover) !important;
+}
+
+.ant-menu-item:hover {
+  color: var(--text-primary) !important;
+  background: var(--bg-hover) !important;
+}
+
+/* Ant Design Tabs 适配 */
+.ant-tabs-tab {
+  color: var(--text-secondary) !important;
+}
+
+.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--text-primary) !important;
+}
+
+/* Ant Design Card 适配 */
+.ant-card {
+  background: var(--bg-card) !important;
+  border-color: var(--border) !important;
+}
+
+.ant-card-head {
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--border) !important;
+}
+
+/* 亮色主题特殊处理 */
+[data-theme="light"] .ant-menu-item {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .ant-menu-item-selected {
+  color: var(--accent) !important;
+  background: var(--bg-hover) !important;
 }

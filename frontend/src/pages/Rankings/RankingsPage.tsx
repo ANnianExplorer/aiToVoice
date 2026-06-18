@@ -3,6 +3,7 @@ import { Typography, Tabs, List, Button, message } from 'antd';
 import { FireOutlined, RocketOutlined, RiseOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import { getHotRanking, getNewRanking, getRisingRanking, type RankingItem } from '../../api/rankings';
 import { usePlayerStore } from '../../stores/playerStore';
+import { useTheme } from '../../theme/ThemeProvider';
 import type { Song } from '../../types';
 
 const { Title, Text } = Typography;
@@ -13,6 +14,7 @@ export default function RankingsPage() {
   const [rising, setRising] = useState<RankingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { setCurrentSong, setPlaylist } = usePlayerStore();
+  const { tokens } = useTheme();
 
   useEffect(() => {
     Promise.all([
@@ -45,21 +47,28 @@ export default function RankingsPage() {
       dataSource={items}
       renderItem={(item) => (
         <List.Item
-          style={{ background: '#181818', marginBottom: 4, borderRadius: 8, padding: '12px 16px' }}
+          style={{
+            background: tokens.bgCard,
+            marginBottom: 4,
+            borderRadius: tokens.borderRadius,
+            padding: '12px 16px',
+            border: `1px solid ${tokens.border}`,
+          }}
           actions={[
-            <Button type="text" icon={<PlayCircleOutlined />} style={{ color: '#1DB954' }}
+            <Button type="text" icon={<PlayCircleOutlined />}
+              style={{ color: tokens.accent }}
               onClick={() => {
                 setPlaylist(items.map(toSong));
                 setCurrentSong(toSong(item));
               }} />,
           ]}
         >
-          <span style={{ color: '#1DB954', fontWeight: 700, marginRight: 16, fontSize: 18 }}>
+          <span style={{ color: tokens.accent, fontWeight: 700, marginRight: 16, fontSize: 18 }}>
             {item.rankPosition}
           </span>
           <List.Item.Meta
-            title={<Text style={{ color: '#fff' }}>{item.song.title}</Text>}
-            description={<Text style={{ color: '#B3B3B3' }}>{item.song.artistName || ''}</Text>}
+            title={<Text style={{ color: tokens.textPrimary }}>{item.song.title}</Text>}
+            description={<Text style={{ color: tokens.textSecondary }}>{item.song.artistName || ''}</Text>}
           />
         </List.Item>
       )}
@@ -68,7 +77,7 @@ export default function RankingsPage() {
 
   return (
     <div>
-      <Title level={2} style={{ color: '#fff' }}>排行榜</Title>
+      <Title level={2} style={{ color: tokens.textPrimary, fontFamily: tokens.fontFamily }}>排行榜</Title>
       <Tabs items={[
         { key: 'hot', label: '热歌榜', icon: <FireOutlined />, children: renderList(hot) },
         { key: 'new', label: '新歌榜', icon: <RocketOutlined />, children: renderList(newSongs) },

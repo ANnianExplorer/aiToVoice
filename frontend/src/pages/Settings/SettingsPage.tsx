@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Typography, Card, Form, Switch, Select, Slider, message, Spin } from 'antd';
 import { getSettings, updateSettings } from '../../api/settings';
 import { useAuthStore } from '../../stores/authStore';
+import { useTheme } from '../../theme/ThemeProvider';
 
 const { Title, Text } = Typography;
 
@@ -18,6 +19,7 @@ interface Settings {
 
 export default function SettingsPage() {
   const { user } = useAuthStore();
+  const { tokens, mode, setTheme } = useTheme();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -37,21 +39,36 @@ export default function SettingsPage() {
     }
   };
 
+  const handleThemeChange = (value: string) => {
+    const themeMode = value === 'LIGHT' ? 'light' : 'dark';
+    setTheme(themeMode);
+    handleUpdate('theme', value);
+  };
+
+  const cardStyle = {
+    background: tokens.bgCard,
+    border: `1px solid ${tokens.border}`,
+    borderRadius: tokens.borderRadiusLg,
+    marginBottom: 16,
+  };
+
   if (loading || !settings) return <Spin size="large" />;
 
   return (
     <div>
-      <Title level={2} style={{ color: '#fff' }}>设置</Title>
+      <Title level={2} style={{ color: tokens.textPrimary, fontFamily: tokens.fontFamily }}>设置</Title>
       <div style={{ maxWidth: 600 }}>
-        <Card title="外观" style={{ background: '#181818', border: '1px solid #282828', marginBottom: 16 }}>
+        <Card title="外观" style={cardStyle}>
           <Form layout="vertical">
             <Form.Item label="主题">
-              <Select value={settings.theme} onChange={(v) => handleUpdate('theme', v)}
+              <Select
+                value={mode === 'dark' ? 'DARK' : 'LIGHT'}
+                onChange={handleThemeChange}
                 options={[
-                  { value: 'DARK', label: '深色' },
-                  { value: 'LIGHT', label: '浅色' },
-                  { value: 'AUTO', label: '跟随系统' },
-                ]} />
+                  { value: 'DARK', label: '🌙 深色 (Spotify 风格)' },
+                  { value: 'LIGHT', label: '☀️ 浅色 (苹果风格)' },
+                ]}
+              />
             </Form.Item>
             <Form.Item label="语言">
               <Select value={settings.language} onChange={(v) => handleUpdate('language', v)}
@@ -62,7 +79,7 @@ export default function SettingsPage() {
             </Form.Item>
           </Form>
         </Card>
-        <Card title="音频" style={{ background: '#181818', border: '1px solid #282828', marginBottom: 16 }}>
+        <Card title="音频" style={cardStyle}>
           <Form layout="vertical">
             <Form.Item label="音频质量">
               <Select value={settings.audioQuality} onChange={(v) => handleUpdate('audioQuality', v)}
@@ -81,7 +98,7 @@ export default function SettingsPage() {
             </Form.Item>
           </Form>
         </Card>
-        <Card title="其他" style={{ background: '#181818', border: '1px solid #282828', marginBottom: 16 }}>
+        <Card title="其他" style={cardStyle}>
           <Form layout="vertical">
             <Form.Item label="通知">
               <Switch checked={settings.notificationEnabled} onChange={(v) => handleUpdate('notificationEnabled', v)} />
@@ -91,9 +108,9 @@ export default function SettingsPage() {
             </Form.Item>
           </Form>
         </Card>
-        <Card title="账号" style={{ background: '#181818', border: '1px solid #282828' }}>
-          <Text style={{ color: '#B3B3B3' }}>用户名: {user?.username}</Text><br />
-          <Text style={{ color: '#B3B3B3' }}>邮箱: {user?.email}</Text>
+        <Card title="账号" style={cardStyle}>
+          <Text style={{ color: tokens.textSecondary }}>用户名: {user?.username}</Text><br />
+          <Text style={{ color: tokens.textSecondary }}>邮箱: {user?.email}</Text>
         </Card>
       </div>
     </div>

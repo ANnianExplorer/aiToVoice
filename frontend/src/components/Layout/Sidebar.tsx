@@ -5,6 +5,7 @@ import {
   TrophyOutlined, TeamOutlined, RobotOutlined, AudioOutlined,
   SettingOutlined
 } from '@ant-design/icons';
+import { useTheme } from '../../theme/ThemeProvider';
 
 const menuItems = [
   { key: '/', icon: <HomeOutlined />, label: '首页' },
@@ -20,18 +21,31 @@ const menuItems = [
 export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { tokens } = useTheme();
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ height: 64, display: 'flex', alignItems: 'center', padding: '0 24px' }}>
-        <span style={{ fontSize: 20, fontWeight: 700, color: '#1DB954' }}>AiToVoice</span>
+      <div style={{
+        height: 64,
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 24px',
+        borderBottom: `1px solid ${tokens.border}`,
+      }}>
+        <span style={{ fontSize: 20, fontWeight: 700, color: tokens.accent }}>
+          AiToVoice
+        </span>
       </div>
       <Menu
         mode="inline"
         selectedKeys={[location.pathname]}
         items={menuItems}
         onClick={({ key }) => navigate(key)}
-        style={{ background: 'transparent', borderRight: 'none' }}
+        style={{
+          background: 'transparent',
+          borderRight: 'none',
+          color: tokens.textPrimary,
+        }}
       />
     </div>
   );
