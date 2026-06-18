@@ -12,6 +12,7 @@ import AITeacherPage from './pages/AITeacher/AITeacherPage';
 import StudioPage from './pages/Studio/StudioPage';
 import SettingsPage from './pages/Settings/SettingsPage';
 import ProfilePage from './pages/Profile/ProfilePage';
+import UploadPage from './pages/Upload/UploadPage';
 import SongDetailPage from './pages/Song/SongDetailPage';
 import PlaylistDetailPage from './pages/Playlist/PlaylistDetailPage';
 import UserHomePage from './pages/Social/UserHomePage';
@@ -31,6 +32,7 @@ function App() {
           <Route path="social" element={<SocialPage />} />
           <Route path="ai-teacher" element={<AITeacherPage />} />
           <Route path="studio" element={<StudioPage />} />
+          <Route path="upload" element={<UploadPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="song/:id" element={<SongDetailPage />} />

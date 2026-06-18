@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   HomeOutlined, SearchOutlined, CustomerServiceOutlined,
   TrophyOutlined, TeamOutlined, RobotOutlined, AudioOutlined,
-  SettingOutlined
+  UploadOutlined, SettingOutlined
 } from '@ant-design/icons';
 import { useTheme } from '../../theme/ThemeProvider';
 
@@ -15,6 +15,7 @@ const menuItems = [
   { key: '/social', icon: <TeamOutlined />, label: '社交' },
   { key: '/ai-teacher', icon: <RobotOutlined />, label: 'AI 老师' },
   { key: '/studio', icon: <AudioOutlined />, label: '录音室' },
+  { key: '/upload', icon: <UploadOutlined />, label: '上传歌曲' },
   { key: '/settings', icon: <SettingOutlined />, label: '设置' },
 ];
 
