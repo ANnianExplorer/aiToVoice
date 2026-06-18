@@ -10,6 +10,7 @@ public record SongDto(
         String coverUrl,
         String filePath,
         String sourceType,
+        String streamUrl,
         Long playCount,
         Long likeCount
 ) {}

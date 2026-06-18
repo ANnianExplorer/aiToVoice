@@ -9,8 +9,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SongRepository extends JpaRepository<Song, Long> {
+
+    long countBySourceType(Song.SourceType sourceType);
+
+    Optional<Song> findBySourceIdAndSourceType(String sourceId, Song.SourceType sourceType);
 
     @Query("SELECT s FROM Song s LEFT JOIN FETCH s.artist LEFT JOIN FETCH s.album LEFT JOIN FETCH s.genre WHERE s.deletedAt IS NULL AND s.title LIKE %:keyword% ESCAPE '\\'")
     Page<Song> searchByTitle(@Param("keyword") String keyword, Pageable pageable);

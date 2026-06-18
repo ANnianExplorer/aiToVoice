@@ -39,6 +39,8 @@ public class Song extends BaseEntity {
     private SourceType sourceType;
     @Column(name = "source_id", length = 100)
     private String sourceId;
+    @Column(name = "stream_url", length = 1000)
+    private String streamUrl;
     @Column(name = "play_count")
     @Builder.Default
     private Long playCount = 0L;
