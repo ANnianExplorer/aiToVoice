@@ -37,33 +37,33 @@ public class MusicDataInitializer implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        // 检查是否已有 Audius 来源的歌曲
-        long audiusCount = songRepository.countBySourceType(Song.SourceType.AUDIUS);
-        if (audiusCount >= 20) {
-            log.info("已有 {} 首 Audius 歌曲，跳过同步", audiusCount);
+        // 同步 Audius
+        syncProvider(audiusProvider, Song.SourceType.AUDIUS, 50);
+    }
+
+    private void syncProvider(com.aitovoice.music.source.MusicSourceProvider provider,
+                              Song.SourceType sourceType, int limit) {
+        long count = songRepository.countBySourceType(sourceType);
+        if (count >= 20) {
+            log.info("已有 {} 首 {} 歌曲，跳过同步", count, sourceType);
             return;
         }
-
-        if (!audiusProvider.isAvailable()) {
-            log.warn("Audius 不可用，跳过同步");
+        if (!provider.isAvailable()) {
+            log.info("{} 不可用，跳过同步", sourceType);
             return;
         }
-
-        log.info("开始从 Audius 同步热门歌曲...");
-
+        log.info("开始从 {} 同步热门歌曲...", sourceType);
         try {
-            var tracks = audiusProvider.getTrending(50);
+            var tracks = provider.getTrending(limit);
             int saved = 0;
-
             for (var track : tracks) {
                 if (existsBySourceId(track.sourceId())) continue;
                 saveTrack(track);
                 saved++;
             }
-
-            log.info("Audius 同步完成：新增 {} 首歌曲", saved);
+            log.info("{} 同步完成：新增 {} 首歌曲", sourceType, saved);
         } catch (Exception e) {
-            log.warn("Audius 同步失败: {}", e.getMessage());
+            log.warn("{} 同步失败: {}", sourceType, e.getMessage());
         }
     }
 

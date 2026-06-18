@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/songs/**", "/api/rankings/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/music-source/**", "/api/genres/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/music-source/**", "/api/genres/**", "/api/discover/**").permitAll()
                         .requestMatchers("/api/files/audio/**", "/api/files/cover/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
