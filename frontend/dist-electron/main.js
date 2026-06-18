@@ -3,7 +3,9 @@ const electron = require("electron");
 const path = require("path");
 let mainWindow = null;
 let tray = null;
+let isQuitting = false;
 function createWindow() {
+  const iconPath = path.join(__dirname, "../assets/icon.png");
   mainWindow = new electron.BrowserWindow({
     width: 1280,
     height: 800,
@@ -17,50 +19,65 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false
     },
-    icon: path.join(__dirname, "../assets/icon.png")
+    icon: iconPath,
+    show: false
+    // 等待 ready-to-show 再显示
   });
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
   } else {
     mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
   }
+  mainWindow.once("ready-to-show", () => {
+    mainWindow == null ? void 0 : mainWindow.show();
+  });
+  mainWindow.on("close", (event) => {
+    if (!isQuitting) {
+      event.preventDefault();
+      electron.dialog.showMessageBox(mainWindow, {
+        type: "question",
+        buttons: ["最小化到托盘", "退出程序", "取消"],
+        defaultId: 0,
+        cancelId: 2,
+        title: "关闭 AiToVoice",
+        message: "你想要最小化到托盘还是退出程序？",
+        detail: "最小化到托盘后，程序将在后台继续运行。"
+      }).then(({ response }) => {
+        if (response === 0) {
+          mainWindow == null ? void 0 : mainWindow.hide();
+        } else if (response === 1) {
+          isQuitting = true;
+          mainWindow == null ? void 0 : mainWindow.close();
+        }
+      });
+    }
+  });
   mainWindow.on("closed", () => {
     mainWindow = null;
-  });
-  mainWindow.on("minimize", (event) => {
-    if (process.platform === "win32") {
-      event.preventDefault();
-      mainWindow == null ? void 0 : mainWindow.hide();
-    }
   });
   registerGlobalShortcuts();
 }
 function registerGlobalShortcuts() {
-  electron.globalShortcut.register("MediaPlayPause", () => {
-    mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "play-pause");
-  });
-  electron.globalShortcut.register("MediaNextTrack", () => {
-    mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "next");
-  });
-  electron.globalShortcut.register("MediaPreviousTrack", () => {
-    mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "previous");
-  });
-  electron.globalShortcut.register("MediaStop", () => {
-    mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "stop");
-  });
-  electron.globalShortcut.register("VolumeUp", () => {
-    mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "volume-up");
-  });
-  electron.globalShortcut.register("VolumeDown", () => {
-    mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "volume-down");
-  });
-  electron.globalShortcut.register("VolumeMute", () => {
-    mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "mute");
-  });
+  const shortcuts = [
+    ["MediaPlayPause", () => mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "play-pause")],
+    ["MediaNextTrack", () => mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "next")],
+    ["MediaPreviousTrack", () => mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "previous")],
+    ["MediaStop", () => mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "stop")],
+    ["VolumeUp", () => mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "volume-up")],
+    ["VolumeDown", () => mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "volume-down")],
+    ["VolumeMute", () => mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "mute")]
+  ];
+  for (const [key, handler] of shortcuts) {
+    try {
+      electron.globalShortcut.register(key, handler);
+    } catch {
+    }
+  }
 }
 function createTray() {
-  const icon = electron.nativeImage.createEmpty();
-  tray = new electron.Tray(icon);
+  const trayIconPath = path.join(__dirname, "../assets/tray-icon.png");
+  const trayIcon = electron.nativeImage.createFromPath(trayIconPath);
+  tray = new electron.Tray(trayIcon.isEmpty() ? electron.nativeImage.createEmpty() : trayIcon);
   const contextMenu = electron.Menu.buildFromTemplate([
     {
       label: "显示 AiToVoice",
@@ -72,27 +89,22 @@ function createTray() {
     { type: "separator" },
     {
       label: "播放/暂停",
-      click: () => {
-        mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "play-pause");
-      }
+      click: () => mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "play-pause")
     },
     {
       label: "下一首",
-      click: () => {
-        mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "next");
-      }
+      click: () => mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "next")
     },
     {
       label: "上一首",
-      click: () => {
-        mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "previous");
-      }
+      click: () => mainWindow == null ? void 0 : mainWindow.webContents.send("media-command", "previous")
     },
     { type: "separator" },
     {
       label: "退出",
       click: () => {
-        electron.app.quit();
+        isQuitting = true;
+        mainWindow == null ? void 0 : mainWindow.close();
       }
     }
   ]);
@@ -111,7 +123,9 @@ electron.ipcMain.on("window:maximize", () => {
     mainWindow == null ? void 0 : mainWindow.maximize();
   }
 });
-electron.ipcMain.on("window:close", () => mainWindow == null ? void 0 : mainWindow.close());
+electron.ipcMain.on("window:close", () => {
+  mainWindow == null ? void 0 : mainWindow.close();
+});
 electron.ipcMain.on("window:hide", () => mainWindow == null ? void 0 : mainWindow.hide());
 electron.ipcMain.handle("get-platform", () => process.platform);
 electron.ipcMain.handle("get-app-version", () => electron.app.getVersion());
@@ -130,6 +144,7 @@ electron.app.on("activate", () => {
     createWindow();
   }
 });
-electron.app.on("will-quit", () => {
+electron.app.on("before-quit", () => {
+  isQuitting = true;
   electron.globalShortcut.unregisterAll();
 });
